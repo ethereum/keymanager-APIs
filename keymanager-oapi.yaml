@@ -62,7 +62,7 @@ paths:
                       required: [validating_pubkey, derivation_path]
                       properties:
                         validating_pubkey:
-                          $ref: "#/components/responses/Unauthorized"
+                          $ref: "#/components/schemas/Pubkey"
                         derivation_path:
                           type: string
                           description: The derivation path (if present in the imported keystore).
@@ -175,7 +175,7 @@ paths:
                   type: array
                   description: List of public keys to delete.
                   items:
-                    $ref: "./types/primitive.yaml#/Pubkey"
+                    $ref: "#/components/schemas/Pubkey"
       responses:
         "200":
           description: Success response
