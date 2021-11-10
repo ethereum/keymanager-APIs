@@ -30,6 +30,10 @@ servers:
         description: "key manager API url"
         default: "https://public-mainnet-node.ethereum.org"
 
+tags:
+  - name: Keymanager
+    description: Set of endpoints for key management.
+
 paths:
   /eth/v1/keystores:
     get:
@@ -39,6 +43,8 @@ paths:
         List all validating pubkeys known to and decrypted by this keymanager binary
       security:
         - cookieAuth: []
+      tags:
+        - Keymanager
       responses:
         "200":
           description: Success response
@@ -47,22 +53,22 @@ paths:
               schema:
                 title: ListKeysResponse
                 type: object
+                required: [data]
                 properties:
                   data:
                     type: array
                     items:
                       type: object
+                      required: [validating_pubkey, derivation_path]
                       properties:
                         validating_pubkey:
-                          $ref: "#/components/types/Pubkey"
+                          $ref: "#/components/schemas/Pubkey"
                         derivation_path:
                           type: string
                           description: The derivation path (if present in the imported keystore).
                         readonly:
                           type: boolean
-                          required: false
                           description: The key associated with this pubkey cannot be deleted from the API
-
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -80,11 +86,14 @@ paths:
         EIP-3076: Slashing Protection Interchange Format.
       security:
         - cookieAuth: []
+      tags:
+        - Keymanager
       requestBody:
         content:
           application/json:
             schema:
               type: object
+              required: [keystores, passwords]
               properties:
                 keystores:
                   type: array
@@ -98,7 +107,6 @@ paths:
                     type: string
                 slashing_protection:
                   type: object
-                  required: false
                   description: Slashing protection of the imported keys data in EIP-3076 JSON format.
       responses:
         "200":
@@ -108,12 +116,14 @@ paths:
               schema:
                 title: ImportKeystoresResponse
                 type: object
+                required: [data]
                 properties:
                   data:
                     type: array
                     description: Status result of each `request.keystores` with same length and order of `request.keystores`
                     items:
                       type: object
+                      required: [status]
                       properties:
                         status:
                           type: string
@@ -152,17 +162,20 @@ paths:
         nor slashing protection data.
       security:
         - cookieAuth: []
+      tags:
+        - Keymanager
       requestBody:
         content:
           application/json:
             schema:
               type: object
+              required: [pubkeys]
               properties:
                 pubkeys:
                   type: array
                   description: List of public keys to delete.
                   items:
-                    $ref: "#/components/types/Pubkey"
+                    $ref: "#/components/schemas/Pubkey"
       responses:
         "200":
           description: Success response
@@ -171,12 +184,14 @@ paths:
               schema:
                 title: DeleteKeysResponse
                 type: object
+                required: [data, slashing_protection]
                 properties:
                   data:
                     type: array
                     description: Deletion status of all keys in `request.pubkeys` in the same order.
                     items:
                       type: object
+                      required: [status]
                       properties:
                         status:
                           type: string
@@ -198,7 +213,6 @@ paths:
                     description: |
                       JSON representation of the slash protection data in format defined in EIP-3076: Slashing
                       Protection Interchange Format.
-
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -207,23 +221,45 @@ paths:
           $ref: "#/components/responses/InternalError"
 
 components:
-  responses:
-    Unauthorized:
-      $ref: "./types/http.yaml#/Unauthorized"
-    Forbidden:
-      $ref: "./types/http.yaml#/Forbidden"
-    InternalError:
-      $ref: "./types/http.yaml#/InternalError"
-
   securitySchemes:
     cookieAuth: # arbitrary name for the security scheme; will be used in the "security" key later
       type: apiKey
       in: cookie
       name: SESSION # cookie name
 
-  types:
+  schemas:
     Pubkey:
       type: string
       pattern: "^0x[a-fA-F0-9]{96}$"
       description: "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._"
       example: "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+
+    ErrorResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          description: "Message describing error"
+          type: string
+
+  responses:
+    Unauthorized:
+      description: "Unauthorized, no token is found"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    Forbidden:
+      description: "Forbidden, a token is found but is invalid"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    InternalError:
+      description: "Beacon node internal error."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"

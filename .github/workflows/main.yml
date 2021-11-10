@@ -1,0 +1,20 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Lint spec
+        uses: vaibhav-jain/spectral-action/@v2.6.1
+        with:
+          file_path: keymanager-oapi.yaml
+
+      - name: Bundle spec
+        uses: mpetrunic/swagger-cli-action@v1.0.0
+        with:
+          command: "bundle ./keymanager-oapi.yaml -r -t yaml -o ./bundle.yaml"
