@@ -42,7 +42,7 @@ paths:
       description: |
         List all validating pubkeys known to and decrypted by this keymanager binary
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       tags:
         - Keymanager
       responses:
@@ -85,7 +85,7 @@ paths:
         Users SHOULD send slashing_protection data associated with the imported pubkeys. MUST follow the format defined in
         EIP-3076: Slashing Protection Interchange Format.
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       tags:
         - Keymanager
       requestBody:
@@ -161,7 +161,7 @@ paths:
         DELETE should never return a 404 response, even if all pubkeys from request.pubkeys have no extant keystores
         nor slashing protection data.
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       tags:
         - Keymanager
       requestBody:
@@ -222,7 +222,7 @@ paths:
 
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    cookieAuth: # arbitrary name for the security scheme; will be used in the "security" key later
+      type: apiKey
+      in: cookie
+      name: SESSION # cookie name
