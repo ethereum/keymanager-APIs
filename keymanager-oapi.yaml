@@ -30,6 +30,10 @@ servers:
         description: "key manager API url"
         default: "https://public-mainnet-node.ethereum.org"
 
+tags:
+  - name: Keymanager
+    description: Set of endpoints for key management.
+
 paths:
   /eth/v1/keystores:
     get:
@@ -39,6 +43,8 @@ paths:
         List all validating pubkeys known to and decrypted by this keymanager binary
       security:
         - cookieAuth: []
+      tags:
+        - Keymanager
       responses:
         "200":
           description: Success response
@@ -80,6 +86,8 @@ paths:
         EIP-3076: Slashing Protection Interchange Format.
       security:
         - cookieAuth: []
+      tags:
+        - Keymanager
       requestBody:
         content:
           application/json:
@@ -152,6 +160,8 @@ paths:
         nor slashing protection data.
       security:
         - cookieAuth: []
+      tags:
+        - Keymanager
       requestBody:
         content:
           application/json:
