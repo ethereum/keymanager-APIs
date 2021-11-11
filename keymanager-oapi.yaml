@@ -15,13 +15,13 @@ info:
     All sensitive routes are to be authenticated with a token. This token should be provided by the user via a secure channel:
       - Log the token to stdout when running the binary with the key manager API enabled
       - Read the token from a file available to the binary
-  version: "Dev - Eth2Spec v1.0.1"
+  version: "v1.0.0-alpha"
   contact:
     name: Ethereum Github
-    url: https://github.com/ethereum/eth2.0-apis/issues
+    url: https://github.com/ethereum/keymanager-APIs/issues
   license:
-    name: "Apache 2.0"
-    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+    name: "Creative Commons Zero v1.0 Universal"
+    url: "https://creativecommons.org/publicdomain/zero/1.0/"
 
 servers:
   - url: "{server_url}"
