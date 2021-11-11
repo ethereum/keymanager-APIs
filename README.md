@@ -25,16 +25,17 @@ such as GUIs, alerts, etc.
 
 ## Render
 
-To render spec in browser you will need any http server to load `index.html` file
-in root of the repo.
+To render the spec in a browser you will need an HTTP server to serve the `index.html` file.
+Rendering occurs client-side in JavaScript, so no changes are required to the HTML file between
+edits.
 
 ##### Python
 
 ```
-python -m SimpleHTTPServer 8080
+python2 -m SimpleHTTPServer 8080
 ```
 
-And api spec will render on [http://localhost:8080](http://localhost:8080).
+The API spec will render on [http://localhost:8080](http://localhost:8080).
 
 ##### NodeJs
 
@@ -48,13 +49,13 @@ yarn global add simplehttpserver
 simplehttpserver
 ```
 
-And api spec will render on [http://localhost:8000](http://localhost:8000).
+The API spec will render on [http://localhost:8000](http://localhost:8000).
 
 ## Contributing
 
-Api spec is checked for lint errors before merge.
+The API spec is linted for issues before PRs are merged.
 
-To run lint locally, install linter with
+To run the linter locally, install `spectral`:
 
 ```
 npm install -g @stoplight/spectral
@@ -64,30 +65,24 @@ npm install -g @stoplight/spectral
 yarn global add @stoplight/spectral
 ```
 
-and run lint with
+and run with
 
 ```
-spectral lint beacon-node-oapi.yaml
+spectral lint keymanager-oapi.yaml
 ```
-
-## Implementations
-
-- [TypeScript Wrapper](https://www.npmjs.com/package/@chainsafe/eth2.0-api-wrapper)
-
-https://www.npmjs.com/package/@chainsafe/eth2.0-api-wrapper
 
 ## Releasing
 
-1. Create and push tag
+1. Create and push a tag
 
-   - Make sure info.version in beacon-node-oapi.yaml file is updated before tagging.
+   - Make sure info.version in keymanager-oapi.yaml file is updated before tagging.
    - CD will create github release and upload bundled spec file
 
 2. Add release entrypoint in index.html
 
 In SwaggerUIBundle configuration (inside index.html file), add another entry in "urls" field (SwaggerUI will load first item as default).
-Entry should be in following format(replace `<tag>` with real tag name from step 1.):
+Entries should be in the following format (replace `<tag>` with the real tag name from step 1):
 
 ```javascript
-         {url: "https://github.com/ethereum/keymanager-APIs/releases/download/<tag>/beacon-node-oapi.yaml", name: "<tag>"},
+         {url: "https://github.com/ethereum/keymanager-APIs/releases/download/<tag>/keymanager-oapi.yaml", name: "<tag>"},
 ```

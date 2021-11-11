@@ -17,7 +17,7 @@ jobs:
       - name: Bundle json spec
         uses: mpetrunic/swagger-cli-action@v1.0.0
         with:
-          command: "bundle ./keymanager-oapi.yaml -r -t json -o ./deploy/beacon-node-oapi.json"
+          command: "bundle ./keymanager-oapi.yaml -r -t json -o ./deploy/keymanager-oapi.json"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -43,8 +43,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./deploy/beacon-node-oapi.json
-          asset_name: beacon-node-oapi.json
+          asset_path: ./deploy/keymanager-oapi.json
+          asset_name: keymanager-oapi.json
           asset_content_type: application/json
       - name: Rollback Release
         if: failure()
