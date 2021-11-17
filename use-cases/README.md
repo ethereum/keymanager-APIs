@@ -1,7 +1,5 @@
 # Consensus Validator-client key management API
 
-[beacon-apis PR](https://github.com/ethereum/beacon-APIs/pull/151)
-
 ## Scope
 The PR currently stipulates basically 3 endpoints for the validator client (VC) to provide:
 
