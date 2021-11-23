@@ -15,13 +15,23 @@ I want to use a GUI to add a new validator key to my running validator-client.
 __NEED__ validator-key file and password.
 
 ### API
- - Call `POST` to add key, supplying password, validator keystore, and slashing protection data.
+ - Call `POST` to add key, supplying password, validator keystore, and (optionally) slashing protection data.
 
 ### GUI 
  - Get validator keystores and associated passwords from the user.
  - If the user has slashing-protection data, accept that also.
  - Get confirmation from the user that none of the supplied keys are currently in use.
  - Call `POST` API.
+
+### Strange behavior & Errors
+ - `POST` API is not transactional on bulk import.
+ - `POST` API responds in the same order as request
+ - `POST` API will not return an error response on failed key imports but instead return the `error` status.
+ - If 1 password is used for the `POST` API then it will assume the password is the same for all keystores
+ - If there is more than 1 password but less than the amount of total keystores then the `POST` API will return an error response
+ - Duplicate Keystores on import will not be imported and return with  `duplicate` status.
+ - Slashing Protection on keys that are not imported will still be imported. 
+
 
 ## Delete a key
 As a home staker,
@@ -41,6 +51,14 @@ so that I can then add it to a new validator-client for hosting.
  - Get confirmation from the user the key will no longer be used by the validator-client.
  - Call `DELETE` API.
  - Allow user to save slashing protection data, or potentially cache it for future add operations associated with that key.
+
+### Strange behavior & Errors
+ - `DELETE` API is not transactional on bulk delete.
+ - `DELETE` API can be called with an empty array to only export slashing protection data.
+ - `DELETE` API will not return an error response on failed key deletions but instead return the public key with `error` status
+ - Sending duplicate public keys in the request will result for the first instance of a key to return `deleted` status and the remaining instances of the same public key return `not_active` status.
+ - Slashing Protection will only export for keys with `deleted` status.
+
 
 ## Move a key
 As a home staker,
