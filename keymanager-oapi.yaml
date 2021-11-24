@@ -82,9 +82,9 @@ paths:
                   - message
                 properties:
                   message:
-                    description: Message describing error
+                    description: Detailed error message
                     type: string
-                    example: Internal server error
+                    example: description of the error that occurred
         '403':
           description: 'Forbidden, a token is found but is invalid'
           content:
@@ -95,11 +95,11 @@ paths:
                   - message
                 properties:
                   message:
-                    description: Message describing error
+                    description: Detailed error message
                     type: string
-                    example: Internal server error
+                    example: description of the error that occurred
         '500':
-          description: Beacon node internal error.
+          description: 'Internal server error. The server encountered an unexpected error indicative of a serious fault in the system, or a bug.'
           content:
             application/json:
               schema:
@@ -108,9 +108,9 @@ paths:
                   - message
                 properties:
                   message:
-                    description: Message describing error
+                    description: Detailed error message
                     type: string
-                    example: Internal server error
+                    example: description of the error that occurred
     post:
       operationId: ImportKeystores
       summary: Import Keystores.
@@ -184,6 +184,19 @@ paths:
                         message:
                           type: string
                           description: error message if status == error
+        '400':
+          description: Bad request. Request was malformed and could not be processed
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    description: Detailed error message
+                    type: string
+                    example: description of the error that occurred
         '401':
           description: 'Unauthorized, no token is found'
           content:
@@ -194,9 +207,9 @@ paths:
                   - message
                 properties:
                   message:
-                    description: Message describing error
+                    description: Detailed error message
                     type: string
-                    example: Internal server error
+                    example: description of the error that occurred
         '403':
           description: 'Forbidden, a token is found but is invalid'
           content:
@@ -207,11 +220,11 @@ paths:
                   - message
                 properties:
                   message:
-                    description: Message describing error
+                    description: Detailed error message
                     type: string
-                    example: Internal server error
+                    example: description of the error that occurred
         '500':
-          description: Beacon node internal error.
+          description: 'Internal server error. The server encountered an unexpected error indicative of a serious fault in the system, or a bug.'
           content:
             application/json:
               schema:
@@ -220,9 +233,9 @@ paths:
                   - message
                 properties:
                   message:
-                    description: Message describing error
+                    description: Detailed error message
                     type: string
-                    example: Internal server error
+                    example: description of the error that occurred
     delete:
       operationId: DeleteKeys
       summary: Delete Keys.
@@ -300,6 +313,19 @@ paths:
                     description: |
                       JSON serialized representation of the slash protection data in format defined in EIP-3076: Slashing Protection Interchange Format.
                     example: '{"metadata":{"interchange_format_version":"5","genesis_validators_root":"0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"},"data":[{"pubkey":"0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a","signed_blocks":[],"signed_attestations":[]}]}'
+        '400':
+          description: Bad request. Request was malformed and could not be processed
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    description: Detailed error message
+                    type: string
+                    example: description of the error that occurred
         '401':
           description: 'Unauthorized, no token is found'
           content:
@@ -310,9 +336,9 @@ paths:
                   - message
                 properties:
                   message:
-                    description: Message describing error
+                    description: Detailed error message
                     type: string
-                    example: Internal server error
+                    example: description of the error that occurred
         '403':
           description: 'Forbidden, a token is found but is invalid'
           content:
@@ -323,11 +349,11 @@ paths:
                   - message
                 properties:
                   message:
-                    description: Message describing error
+                    description: Detailed error message
                     type: string
-                    example: Internal server error
+                    example: description of the error that occurred
         '500':
-          description: Beacon node internal error.
+          description: 'Internal server error. The server encountered an unexpected error indicative of a serious fault in the system, or a bug.'
           content:
             application/json:
               schema:
@@ -336,9 +362,9 @@ paths:
                   - message
                 properties:
                   message:
-                    description: Message describing error
+                    description: Detailed error message
                     type: string
-                    example: Internal server error
+                    example: description of the error that occurred
 components:
   securitySchemes:
     bearerAuth:
@@ -368,10 +394,23 @@ components:
         - message
       properties:
         message:
-          description: Message describing error
+          description: Detailed error message
           type: string
-          example: Internal server error
+          example: description of the error that occurred
   responses:
+    BadRequest:
+      description: Bad request. Request was malformed and could not be processed
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                description: Detailed error message
+                type: string
+                example: description of the error that occurred
     Unauthorized:
       description: 'Unauthorized, no token is found'
       content:
@@ -382,9 +421,9 @@ components:
               - message
             properties:
               message:
-                description: Message describing error
+                description: Detailed error message
                 type: string
-                example: Internal server error
+                example: description of the error that occurred
     Forbidden:
       description: 'Forbidden, a token is found but is invalid'
       content:
@@ -395,11 +434,11 @@ components:
               - message
             properties:
               message:
-                description: Message describing error
+                description: Detailed error message
                 type: string
-                example: Internal server error
+                example: description of the error that occurred
     InternalError:
-      description: Beacon node internal error.
+      description: 'Internal server error. The server encountered an unexpected error indicative of a serious fault in the system, or a bug.'
       content:
         application/json:
           schema:
@@ -408,6 +447,6 @@ components:
               - message
             properties:
               message:
-                description: Message describing error
+                description: Detailed error message
                 type: string
-                example: Internal server error
+                example: description of the error that occurred
