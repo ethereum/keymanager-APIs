@@ -27,10 +27,9 @@ __NEED__ validator-key file and password.
  - `POST` API is not transactional on bulk import.
  - `POST` API responds in the same order as request
  - `POST` API will not return an error response on failed key imports but instead return the `error` status.
- - If 1 password is used for the `POST` API then it will assume the password is the same for all keystores
- - If there is more than 1 password but less than the amount of total keystores then the `POST` API will return an error response
- - Duplicate Keystores on import will not be imported and return with  `duplicate` status.
- - Slashing Protection on keys that are not imported will still be imported. 
+ - `POST` API will fail when the length of passwords does not match the length of keystores. it is assumed the keystores will be one to one with the positions of the password.
+ - Duplicate Keystores on import will not be imported and return with  `duplicate` status. ex.  first key is new, it gets success; second key is the same, then it gets duplicate (the first import in the batch added it)
+ - Slashing Protection on keys that are not imported will still be imported. You could import slashing protection thats completely unrelated to the entire set.
 
 
 ## Delete a key
@@ -57,6 +56,7 @@ so that I can then add it to a new validator-client for hosting.
  - `DELETE` API can be called with an empty array to only export slashing protection data.
  - `DELETE` API will not return an error response on failed key deletions but instead return the public key with `error` status
  - Sending duplicate public keys in the request will result for the first instance of a key to return `deleted` status and the remaining instances of the same public key return `not_active` status.
+ - Subsequent `DELETE` API calls can re-retrieve Slashing Protection data without need to delete a keystore.
  - Slashing Protection will only export for keys with `deleted` status.
 
 
