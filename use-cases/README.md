@@ -24,7 +24,7 @@ __NEED__ validator-key file and password.
  - Call `POST` API.
 
 ### Strange behavior & Errors
- - `POST` API is not transactional on bulk import.
+ - `POST` API is not required to be transactional on bulk import.
  - `POST` API responds in the same order as request
  - `POST` API will not return an error response on failed key imports but instead return the `error` status.
  - If 1 password is used for the `POST` API then it will assume the password is the same for all keystores
