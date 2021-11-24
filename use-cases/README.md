@@ -23,13 +23,20 @@ __NEED__ validator-key file and password.
  - Get confirmation from the user that none of the supplied keys are currently in use.
  - Call `POST` API.
 
-### Strange behavior & Errors
+### Other behavior & Errors
  - `POST` API is not required to be transactional on bulk import.
  - `POST` API responds in the same order as request
  - `POST` API will not return an error response on failed key imports but instead return the `error` status.
  - `POST` API will fail when the length of passwords does not match the length of keystores. it is assumed the keystores will be one to one with the positions of the password.
  - Duplicate Keystores on import will not be imported and return with  `duplicate` status. ex.  first key is new, it gets success; second key is the same, then it gets duplicate (the first import in the batch added it)
- - Slashing Protection on keys that are not imported will still be imported. You could import slashing protection thats completely unrelated to the entire set.
+ - Slashing Protection on keys that are not imported will still be imported. You could import slashing protection thats completely unrelated to the entire import keystore set. Keys that are covered in slashing protection but are not imported will count as `not_active`
+    example:
+    ```
+    Import Request:
+    keystores: a, b
+    slashing protection: a, b, c
+    Response: a, b keystores imported, and a, b, c slashing protection imported
+    ```
 
 
 ## Delete a key
@@ -51,13 +58,22 @@ so that I can then add it to a new validator-client for hosting.
  - Call `DELETE` API.
  - Allow user to save slashing protection data, or potentially cache it for future add operations associated with that key.
 
-### Strange behavior & Errors
- - `DELETE` API is not transactional on bulk delete.
+### Other behavior & Errors
+ - `DELETE` API is not required to be transactional on bulk delete.
+ - `DELETE` API will only return slashing protection for keys in the request
  - `DELETE` API can be called with an empty array to only export slashing protection data.
  - `DELETE` API will not return an error response on failed key deletions but instead return the public key with `error` status
  - Sending duplicate public keys in the request will result for the first instance of a key to return `deleted` status and the remaining instances of the same public key return `not_active` status.
  - Subsequent `DELETE` API calls can re-retrieve Slashing Protection data without need to delete a keystore.
- - Slashing Protection will only export for keys with `deleted` status.
+ - Slashing Protection will only export for keys with `deleted` or `not_active` status.
+ example:
+    ```
+    Request:
+    a, a, b (not found), c
+    Response:
+    DELETED, NOT_ACTIVE, NOT_FOUND, DELETED
+    Should give slashing protection for: a, c
+    ```
 
 
 ## Move a key
