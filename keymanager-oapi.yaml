@@ -162,6 +162,9 @@ paths:
 
         DELETE should never return a 404 response, even if all pubkeys from request.pubkeys have no extant keystores
         nor slashing protection data.
+
+        Slashing protection data must only be returned for keys from `request.pubkeys` for which a
+        `deleted` or `not_active` status is returned.
       security:
         - bearerAuth: []
       tags:
