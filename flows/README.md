@@ -35,6 +35,9 @@ __DELETE /eth/v1/keystores__
 1. Deserialize the JSON request from the caller. On failure return an HTTP `400` status. Let `request` be
    the deserialized request.
 
+   _NOTE_: after this point the response will be a 200 OK. Any 500 response is to be considered a
+   bug.
+
 2. Remove each key from `request.pubkeys` one-by-one, recording its provisional status:
    1. Remove the key from the in-memory registry of keys so that it is no
       longer actively signing messages. If no matching key is found, provisionally
