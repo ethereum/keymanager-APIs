@@ -48,12 +48,12 @@ __DELETE /eth/v1/keystores__
       If the delete/disable fails, set the key's status to `error` with the
       reason for the failure and continue to the next key.
 
-   3. Delete the keystore file or keystore material from disk. If this fails,
-      bail out with an `error` status and appropriate message.
+   3. Delete the keystore file or keystore material from disk. If this fails, set the provisional
+      status to `error` with an appropriate message and continue to the next key.
 
    4. (Optional) If the key was disabled rather than deleted in (ii),
-      permanently remove the key metadata from the on-disk database. Again, bail with
-      an `error` status upon failure.
+      permanently remove the key metadata from the on-disk database. If this fails, set the
+      provisional status to `error` with an appropriate message and continue to the next key.
 
    5. Set the key's provisional status to `deleted` (all previous steps must have succeeded).
 
