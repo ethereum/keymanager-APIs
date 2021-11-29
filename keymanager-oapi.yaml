@@ -140,6 +140,8 @@ paths:
                         message:
                           type: string
                           description: error message if status == error
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -162,6 +164,9 @@ paths:
 
         DELETE should never return a 404 response, even if all pubkeys from request.pubkeys have no extant keystores
         nor slashing protection data.
+
+        Slashing protection data must only be returned for keys from `request.pubkeys` for which a
+        `deleted` or `not_active` status is returned.
       security:
         - bearerAuth: []
       tags:
@@ -213,6 +218,8 @@ paths:
                           description: error message if status == error
                   slashing_protection:
                     $ref: "#/components/schemas/SlashingProtectionData"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -252,11 +259,18 @@ components:
       required: [message]
       properties:
         message:
-          description: "Message describing error"
+          description: "Detailed error message"
           type: string
-          example: "Internal server error"
+          example: "description of the error that occurred"
 
   responses:
+    BadRequest:
+      description: "Bad request. Request was malformed and could not be processed"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
     Unauthorized:
       description: "Unauthorized, no token is found"
       content:
@@ -272,7 +286,8 @@ components:
             $ref: "#/components/schemas/ErrorResponse"
 
     InternalError:
-      description: "Beacon node internal error."
+      description: "Internal server error. The server encountered an unexpected error indicative of
+                    a serious fault in the system, or a bug."
       content:
         application/json:
           schema:
