@@ -63,7 +63,7 @@ so that I can then add it to a new validator-client for hosting.
  - `DELETE` API is not required to be transactional on bulk delete.
  - `DELETE` API will only return slashing protection for keys in the request
  - `DELETE` API will not return an error response on failed key deletions but instead return the public key with `error` status
- - Sending duplicate public keys in the request will result for the first instance of a key to return `deleted` status and the remaining instances of the same public key return `not_active` status.
+ - Sending duplicate public keys in the request will result for the first instance of a key to return `deleted` status and the remaining instances of the same public key return `not_found` or `not_active` status.
  - Subsequent `DELETE` API calls can re-retrieve Slashing Protection data without need to delete a keystore.
  - Slashing Protection will only export for keys with `deleted` or `not_active` status.
  example:
