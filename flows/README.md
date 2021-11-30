@@ -7,9 +7,9 @@ __POST /eth/v1/keystores__
 1. Verify keystores / passwords list length is the same
  - If this process precondition fails, then `400` error
 
-2. If they keystores / passwords lists are blank, then `200`. Could optionally read slashing data and respond error if it is invalid, but there is nothing to do with this import, as slashing data will only be loaded for keys that can be imported.
+2. If the keystores / passwords lists are blank, then `200`. Could optionally read slashing data and respond error if it is invalid, but there is nothing to do with this import, as slashing data will only be loaded for keys that can be imported.
 
-3. Load the slashing data from the request, if present. The slashing data may either be loaded in its entirety, or imported on a per-key basis during the batch processing, which may be cleaner as it would ensure only keys that are being loaded have anything changed in slashing protection data...
+3. Load the slashing data from the request, if present. The slashing data may either be loaded in its entirety, or imported on a per-key basis during the batch processing, which may be cleaner as it would ensure only keys that are being loaded have anything changed in slashing protection data.
  - failure to read slashing protection data if it is present is a `400` error.
 
 
