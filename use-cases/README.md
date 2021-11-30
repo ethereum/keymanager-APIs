@@ -15,13 +15,30 @@ I want to use a GUI to add a new validator key to my running validator-client.
 __NEED__ validator-key file and password.
 
 ### API
- - Call `POST` to add key, supplying password, validator keystore, and slashing protection data.
+ - Call `POST` to add key, supplying password, validator keystore, and (optionally) slashing protection data.
 
 ### GUI 
  - Get validator keystores and associated passwords from the user.
  - If the user has slashing-protection data, accept that also.
  - Get confirmation from the user that none of the supplied keys are currently in use.
  - Call `POST` API.
+
+### Other behavior & Errors
+ - `POST` API is not required to be transactional on bulk import.
+ - `POST` API responds in the same order as request
+ - `POST` API will not return an error response on failed key imports but instead return the `error` status.
+ - `POST` API will fail when the length of passwords does not match the length of keystores. it is assumed the keystores will be one to one with the positions of the password.
+ - Duplicate Keystores on import will not be imported and return with  `duplicate` status. ex.  first key is new, it gets success; second key is the same, then it gets duplicate (the first import in the batch added it)
+ - Slashing Protection on keys that are not imported will still be imported. You could import slashing protection thats completely unrelated to the entire import keystore set. Keys that are covered in slashing protection but are not imported will count as `not_active`
+    example:
+    ```
+    Import Request:
+    keystores: a, b
+    slashing protection: a, b, c
+    Response: a, b keystores imported, and a, b, c slashing protection imported
+    ```
+- flows will cover errors in detail.
+
 
 ## Delete a key
 As a home staker,
@@ -41,6 +58,24 @@ so that I can then add it to a new validator-client for hosting.
  - Get confirmation from the user the key will no longer be used by the validator-client.
  - Call `DELETE` API.
  - Allow user to save slashing protection data, or potentially cache it for future add operations associated with that key.
+
+### Other behavior & Errors
+ - `DELETE` API is not required to be transactional on bulk delete.
+ - `DELETE` API will only return slashing protection for keys in the request
+ - `DELETE` API will not return an error response on failed key deletions but instead return the public key with `error` status
+ - Sending duplicate public keys in the request will result for the first instance of a key to return `deleted` status and the remaining instances of the same public key return `not_found` or `not_active` status.
+ - Subsequent `DELETE` API calls can re-retrieve Slashing Protection data without need to delete a keystore.
+ - Slashing Protection will only export for keys with `deleted` or `not_active` status.
+ example:
+    ```
+    Request:
+    a, a, b (not found), c
+    Response:
+    DELETED, NOT_ACTIVE, NOT_FOUND, DELETED
+    Should give slashing protection for: a, c
+    ```
+- flows will cover errors in detail.
+
 
 ## Move a key
 As a home staker,
