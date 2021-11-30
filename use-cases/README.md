@@ -37,6 +37,7 @@ __NEED__ validator-key file and password.
     slashing protection: a, b, c
     Response: a, b keystores imported, and a, b, c slashing protection imported
     ```
+- flows will cover errors in detail.
 
 
 ## Delete a key
@@ -61,7 +62,6 @@ so that I can then add it to a new validator-client for hosting.
 ### Other behavior & Errors
  - `DELETE` API is not required to be transactional on bulk delete.
  - `DELETE` API will only return slashing protection for keys in the request
- - `DELETE` API can be called with an empty array to only export slashing protection data.
  - `DELETE` API will not return an error response on failed key deletions but instead return the public key with `error` status
  - Sending duplicate public keys in the request will result for the first instance of a key to return `deleted` status and the remaining instances of the same public key return `not_active` status.
  - Subsequent `DELETE` API calls can re-retrieve Slashing Protection data without need to delete a keystore.
@@ -74,6 +74,7 @@ so that I can then add it to a new validator-client for hosting.
     DELETED, NOT_ACTIVE, NOT_FOUND, DELETED
     Should give slashing protection for: a, c
     ```
+- flows will cover errors in detail.
 
 
 ## Move a key
