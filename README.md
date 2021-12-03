@@ -23,7 +23,15 @@ A VC is also in charge of signing messages relatied to validation duties (e.g. A
 The goal of this specification is to promote interoperability between various validator client implementations to aid in the creation of common validator management tools
 such as GUIs, alerts, etc.
 
-## Render
+## Use Cases
+
+High level information on how each API endpoint is used are listed in the [Use-cases Doc](/use-cases/README.md)
+
+## Flows
+
+Further detail expected behavior and error states of the APIs are listed in the [Flows Doc](/flows/README.md)
+
+## Running API Browser Locally
 
 To render the spec in a browser you will need an HTTP server to serve the `index.html` file.
 Rendering occurs client-side in JavaScript, so no changes are required to the HTML file between
