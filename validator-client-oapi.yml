@@ -80,7 +80,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [keystores, passwords]
+              required: [remote_keys]
               properties:
                 remote_keys:
                   type: array
@@ -157,7 +157,7 @@ paths:
               schema:
                 title: DeleteRemoteKeysResponse
                 type: object
-                required: [data, slashing_protection]
+                required: [data]
                 properties:
                   data:
                     type: array
@@ -170,14 +170,12 @@ paths:
                           type: string
                           description: |
                             - deleted: key was active and removed
-                            - not_active: key is known but was already not active
                             - not_found: key was not found to be removed
                             - error: unexpected condition meant the key could not be removed (the key was actually found,
                               but we couldn't stop using it) - this would be a sign that making it active elsewhere would
                               almost certainly cause you headaches / slashing conditions etc.
                           enum:
                             - deleted
-                            - not_active
                             - not_found
                             - error
                           example: deleted
@@ -213,6 +211,7 @@ components:
         pubkey:
           $ref: "#/components/schemas/Pubkey"
         url:
+          description: "URL to API implementing EIP-3030: BLS Remote Signer HTTP API"
           type: string
           example: "https://remote.signer"
 
