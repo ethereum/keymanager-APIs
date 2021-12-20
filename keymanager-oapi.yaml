@@ -373,7 +373,7 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
+      bearerFormat: 'URL safe token, optionally JWT'
   schemas:
     Pubkey:
       type: string
