@@ -35,7 +35,7 @@ tags:
     description: Set of endpoints for key management.
 
 paths:
-  /eth/v1/remotekey:
+  /eth/v1/remotekeys:
     get:
       operationId: ListRemoteKeys
       summary: List Remote Keys.
@@ -214,6 +214,9 @@ components:
           description: "URL to API implementing EIP-3030: BLS Remote Signer HTTP API"
           type: string
           example: "https://remote.signer"
+        readonly:
+          type: boolean
+          description: The signer associated with this pubkey cannot be deleted from the API
 
     ErrorResponse:
       type: object
