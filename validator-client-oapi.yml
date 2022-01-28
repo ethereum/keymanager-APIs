@@ -206,7 +206,7 @@ components:
 
     SignerDefinition:
       type: object
-      required: [pubkey, url]
+      required: [pubkey]
       properties:
         pubkey:
           $ref: "#/components/schemas/Pubkey"
