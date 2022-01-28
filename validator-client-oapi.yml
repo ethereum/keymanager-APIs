@@ -131,8 +131,7 @@ paths:
         DELETE must delete all keys from `request.pubkeys` that are known to the validator client and exist in its
         persistent storage. 
 
-        DELETE should never return a 404 response, even if all pubkeys from request.pubkeys have no extant keystores
-        nor slashing protection data.
+        DELETE should never return a 404 response, even if all pubkeys from request.pubkeys have no existing keystores.
       security:
         - bearerAuth: []
       tags:
