@@ -242,7 +242,7 @@ components:
             $ref: "#/components/schemas/ErrorResponse"
 
     InternalError:
-      description: "Beacon node internal error."
+      description: "Unexpected internal error."
       content:
         application/json:
           schema:
