@@ -99,7 +99,9 @@ paths:
                     type: string
                     example: description of the error that occurred
         '500':
-          description: 'Internal server error. The server encountered an unexpected error indicative of a serious fault in the system, or a bug.'
+          description: |
+            Internal server error. The server encountered an unexpected error indicative of
+            a serious fault in the system, or a bug.
           content:
             application/json:
               schema:
@@ -224,7 +226,9 @@ paths:
                     type: string
                     example: description of the error that occurred
         '500':
-          description: 'Internal server error. The server encountered an unexpected error indicative of a serious fault in the system, or a bug.'
+          description: |
+            Internal server error. The server encountered an unexpected error indicative of
+            a serious fault in the system, or a bug.
           content:
             application/json:
               schema:
@@ -356,7 +360,9 @@ paths:
                     type: string
                     example: description of the error that occurred
         '500':
-          description: 'Internal server error. The server encountered an unexpected error indicative of a serious fault in the system, or a bug.'
+          description: |
+            Internal server error. The server encountered an unexpected error indicative of
+            a serious fault in the system, or a bug.
           content:
             application/json:
               schema:
@@ -441,7 +447,9 @@ components:
                 type: string
                 example: description of the error that occurred
     InternalError:
-      description: 'Internal server error. The server encountered an unexpected error indicative of a serious fault in the system, or a bug.'
+      description: |
+        Internal server error. The server encountered an unexpected error indicative of
+        a serious fault in the system, or a bug.
       content:
         application/json:
           schema:
