@@ -286,8 +286,9 @@ components:
             $ref: "#/components/schemas/ErrorResponse"
 
     InternalError:
-      description: "Internal server error. The server encountered an unexpected error indicative of
-                    a serious fault in the system, or a bug."
+      description: |
+        Internal server error. The server encountered an unexpected error indicative of
+        a serious fault in the system, or a bug.
       content:
         application/json:
           schema:
