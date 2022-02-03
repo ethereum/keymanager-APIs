@@ -1,0 +1,10 @@
+type: object
+required: [pubkey]
+properties:
+  pubkey:
+    $ref: './public_key.yaml'
+  url:
+    $ref: './url.yaml'
+  readonly:
+    type: boolean
+    description: The signer associated with this pubkey cannot be deleted from the API

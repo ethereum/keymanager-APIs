@@ -1,0 +1,3 @@
+description: "URL to API implementing EIP-3030: BLS Remote Signer HTTP API"
+type: string
+example: "https://remote.signer"
