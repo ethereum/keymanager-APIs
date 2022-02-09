@@ -1,0 +1,7 @@
+type: object
+required: [pubkey]
+properties:
+  pubkey:
+    $ref: './public_key.yaml'
+  url:
+    $ref: './url.yaml'

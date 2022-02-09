@@ -56,6 +56,8 @@ components:
       $ref: './types/keystore.yaml'
     SignerDefinition:
       $ref: './types/signer_definition.yaml'
+    ImportRemoteSignerDefinition:
+      $ref: './types/import_remote_signer_definition.yaml'
     SlashingProtectionData:
       $ref: './types/slashing_protection.yaml'
     ErrorResponse:
