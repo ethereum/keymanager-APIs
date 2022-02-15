@@ -5,7 +5,7 @@ There are some Prysm specific quirks that this document would like to make aware
 ### Prysm Default Validator API Address
 `http://127.0.0.1:7500/`
 
-Prysm by default runs on the above address when running with `--web` flag. please look at our documentation [here](https://docs.prylabs.network/docs/prysm-usage/web-interface) for more information. Prysm includes it's own native UI implementation as well.
+Prysm by default runs on the above address when running with `--web` flag. please look at our documentation [here](https://docs.prylabs.network/docs/prysm-usage/web-interface) for more information. Prysm includes its own native UI implementation as well.
 
 
 ## prysm version 2.0.7
