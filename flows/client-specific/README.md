@@ -10,7 +10,7 @@ Prysm by default runs on the above address when running with `--web` flag. pleas
 
 ## prysm version 2.0.7
 
-1. Authentication: Prysm requires a bearer token for using the validator APIs, this token is also used for prysm's native. For more information on where to find this token please look at the Prysm Docs.
+1. Authentication: Prysm requires a bearer token for using the validator APIs, this token is also used for Prysm's native UI. For more information on where to find this token please look at the Prysm Docs.
 
 4. CORS: Prysm has CORS protection with ports 3000 (typically REACT), 7500, and 4200 (typically Angular). Please use the appropriate Prysm flag to enable other ports. Please look at the Prysm Docs for more information.
 
