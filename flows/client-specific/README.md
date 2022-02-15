@@ -1,6 +1,6 @@
 # Prysm Specific Flows
 Prysm (https://github.com/prysmaticlabs/prysm) at the time of writing is one of the consensus layer clients implementing the Keymanager APIs.
-There are some Prysm specific quirks that this document would like to make aware to users.
+There are some Prysm specific quirks that this document would like to make users aware of.
 
 ### Prysm Default Validator API Address
 `http://127.0.0.1:7500/`
