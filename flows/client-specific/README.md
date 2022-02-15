@@ -3,7 +3,7 @@ Prysm (https://github.com/prysmaticlabs/prysm) at the time of writing is one of 
 There are some Prysm specific quirks that this document would like to make aware to users.
 
 ### Prysm Default Validator API Address
-`http://http://127.0.0.1:7500/`
+`http://127.0.0.1:7500/`
 
 Prysm by default runs on the above address when running with `--web` flag. please look at our documentation [here](https://docs.prylabs.network/docs/prysm-usage/web-interface) for more information. Prysm includes it's own native UI implementation as well.
 
