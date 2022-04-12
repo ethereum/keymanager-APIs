@@ -35,6 +35,8 @@ tags:
     description: Set of endpoints for key management of local keys.
   - name: Remote Key Manager
     description: Set of endpoints for key management of external keys.
+  - name: Fee Recipient
+    description: Set of endpoints for management of fee recipient.
 
 paths:
   /eth/v1/keystores:
