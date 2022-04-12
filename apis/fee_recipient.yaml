@@ -1,0 +1,101 @@
+get:
+  operationId: ListFeeRecipients
+  summary: List Fee Recipient.
+  description: |
+    List the validator public key to eth address mappings for fee recipient feature as well as any default eth address mappings.
+    The beacon node may have its own default fee recipient not listed here. 
+  security:
+    - bearerAuth: []
+  tags:
+    - Fee Recipient
+  responses:
+    "200":
+      description: Success response
+      content:
+        application/json:
+          schema:
+            title: ListFeeRecipientsResponse
+            type: object
+            required: [data]
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: "../keymanager-oapi.yaml#/components/schemas/FeeRecipientMap"
+              default_fee_recipient_address:
+                $ref: "../keymanager-oapi.yaml#/components/schemas/Ethaddress"
+    "401":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
+    "403":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Forbidden"
+    "500":
+      $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
+
+post:
+  operationId: SetFeeRecipient
+  summary: Set Fee Recipient.
+  description: |
+    Sets the validator client fee recipient mapping which will then update the beacon node.
+    Existing mappings for the same validator public key will be overwritten.
+    Specific Public keys not mapped will continue to use the default address for fee recipient in accordance to the startup of the validator client and beacon node.
+    Cannot specify default fee recipient address through API.
+  security:
+    - bearerAuth: []
+  tags:
+    - Fee Recipient
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [pubkeys, ethaddresses]
+          properties:
+            pubkeys:
+              type: array
+              description: hexadecimal validator public keys.
+              items:
+                $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+            ethaddresses:
+              type: array
+              description: hexadecimal eth addresses that the validator public key should be associated to, the length should match .
+              items:
+                $ref: "../keymanager-oapi.yaml#/components/schemas/Ethaddress"
+  responses:
+    "200":
+      description: Success response
+      content:
+        application/json:
+          schema:
+            title: SetFeeRecipientResponse
+            type: object
+            required: [data]
+            properties:
+              data:
+                type: array
+                description: Status result of each `request.pubkeys` with same length and order of `request.pubkeys`
+                items:
+                  type: object
+                  required: [status]
+                  properties:
+                    status:
+                      type: string
+                      description: |
+                        - set: new fee recipient mapping is set.
+                        - updated: existing fee recipient mapping is replaced.
+                        - error: Any other status different to the above: decrypting error, I/O errors, etc.
+                      enum:
+                        - set
+                        - updated
+                        - error
+                      example: set
+                    message:
+                      type: string
+                      description: error message if status == error
+    "400":
+      $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
+    "401":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
+    "403":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Forbidden"
+    "500":
+      $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"

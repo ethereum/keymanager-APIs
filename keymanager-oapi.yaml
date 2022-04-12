@@ -41,6 +41,8 @@ paths:
     $ref:  './apis/local_keystores.yaml'
   /eth/v1/remotekeys:
     $ref:  './apis/remote_keystores.yaml'
+  /eth/v1/feerecipient:
+    $ref:  './apis/fee_recipient.yaml'
 
 components:
   securitySchemes:
@@ -52,8 +54,12 @@ components:
   schemas:
     Pubkey:
       $ref: './types/public_key.yaml'
+    Ethaddress:
+      $ref: './types/eth_address.yaml'
     Keystore:
       $ref: './types/keystore.yaml'
+    FeeRecipientMap:
+      $ref: './types/fee_recipient_map.yaml'
     SignerDefinition:
       $ref: './types/signer_definition.yaml'
     ImportRemoteSignerDefinition:
