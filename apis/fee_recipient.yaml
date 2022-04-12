@@ -3,7 +3,9 @@ get:
   summary: List Fee Recipient.
   description: |
     List the validator public key to eth address mappings for fee recipient feature as well as any default eth address mappings.
-    The beacon node may have its own default fee recipient not listed here. 
+    The beacon node may have its own default fee recipient not listed here.
+
+    WARNING: API only works POST MERGE(Bellatrix) 
   security:
     - bearerAuth: []
   tags:
@@ -39,6 +41,8 @@ post:
     Existing mappings for the same validator public key will be overwritten.
     Specific Public keys not mapped will continue to use the default address for fee recipient in accordance to the startup of the validator client and beacon node.
     Cannot specify default fee recipient address through API.
+
+    WARNING: API only works POST MERGE(Bellatrix) 
   security:
     - bearerAuth: []
   tags:
