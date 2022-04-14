@@ -23,7 +23,7 @@ get:
               data:
                 type: array
                 items:
-                  $ref: "../keymanager-oapi.yaml#/components/schemas/FeeRecipientMap"
+                  $ref: "../keymanager-oapi.yaml#/components/schemas/FeeRecipient"
               default_fee_recipient_address:
                 $ref: "../keymanager-oapi.yaml#/components/schemas/Ethaddress"
     "401":
@@ -52,18 +52,13 @@ post:
       application/json:
         schema:
           type: object
-          required: [pubkeys, ethaddresses]
+          required: [fee_recipients]
           properties:
-            pubkeys:
-              type: array
-              description: hexadecimal validator public keys.
-              items:
-                $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
-            ethaddresses:
-              type: array
-              description: hexadecimal eth addresses that the validator public key should be associated to, the length should match .
-              items:
-                $ref: "../keymanager-oapi.yaml#/components/schemas/Ethaddress"
+            fee_recipients:
+            type: array
+            description: array of fee recipient mappings.
+            items:
+              $ref: "../keymanager-oapi.yaml#/components/schemas/FeeRecipient"
   responses:
     "200":
       description: Success response
