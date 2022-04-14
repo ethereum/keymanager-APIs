@@ -55,10 +55,10 @@ post:
           required: [fee_recipients]
           properties:
             fee_recipients:
-            type: array
-            description: array of fee recipient mappings.
-            items:
-              $ref: "../keymanager-oapi.yaml#/components/schemas/FeeRecipient"
+              type: array
+              description: array of fee recipient mappings.
+              items:
+                $ref: "../keymanager-oapi.yaml#/components/schemas/FeeRecipient"
   responses:
     "200":
       description: Success response
