@@ -2,8 +2,8 @@ get:
   operationId: ListFeeRecipient
   summary: List Fee Recipient.
   description: |
-    List the validator public key to eth address mappings for fee recipient feature as well as any default eth address mappings.
-    The beacon node may have its own default fee recipient not listed here.
+    List the validator public key to eth address mapping for fee recipient feature on a specific public key.
+    The validator public key will return with the default fee recipient address if a specific one was not found.
 
     WARNING: API only works POST MERGE(Bellatrix) 
   security:
