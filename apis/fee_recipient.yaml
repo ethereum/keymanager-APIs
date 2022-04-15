@@ -1,5 +1,5 @@
 get:
-  operationId: ListFeeRecipients
+  operationId: ListFeeRecipient
   summary: List Fee Recipient.
   description: |
     List the validator public key to eth address mappings for fee recipient feature as well as any default eth address mappings.
@@ -10,22 +10,24 @@ get:
     - bearerAuth: []
   tags:
     - Fee Recipient
+  parameters:
+      - in: path
+        name: pubkey
+        schema:
+          $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+        required: true
   responses:
     "200":
       description: Success response
       content:
         application/json:
           schema:
-            title: ListFeeRecipientsResponse
+            title: ListFeeRecipientResponse
             type: object
             required: [data]
             properties:
               data:
-                type: array
-                items:
-                  $ref: "../keymanager-oapi.yaml#/components/schemas/FeeRecipient"
-              default_fee_recipient_address:
-                $ref: "../keymanager-oapi.yaml#/components/schemas/Ethaddress"
+                $ref: "../keymanager-oapi.yaml#/components/schemas/FeeRecipient"
     "401":
       $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
     "403":
@@ -47,18 +49,18 @@ post:
     - bearerAuth: []
   tags:
     - Fee Recipient
+  parameters:
+      - in: path
+        name: pubkey
+        schema:
+          $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+        required: true
   requestBody:
     content:
       application/json:
         schema:
-          type: object
-          required: [fee_recipients]
-          properties:
-            fee_recipients:
-              type: array
-              description: array of fee recipient mappings.
-              items:
-                $ref: "../keymanager-oapi.yaml#/components/schemas/FeeRecipient"
+          $ref: '../keymanager-oapi.yaml#/components/schemas/Ethaddress'
+          required: true
   responses:
     "200":
       description: Success response
@@ -70,26 +72,25 @@ post:
             required: [data]
             properties:
               data:
-                type: array
-                description: Status result of each `request.pubkeys` with same length and order of `request.pubkeys`
-                items:
-                  type: object
-                  required: [status]
-                  properties:
-                    status:
-                      type: string
-                      description: |
-                        - set: new fee recipient mapping is set.
-                        - updated: existing fee recipient mapping is replaced.
-                        - error: Any other status different to the above: decrypting error, I/O errors, etc.
-                      enum:
-                        - set
-                        - updated
-                        - error
-                      example: set
-                    message:
-                      type: string
-                      description: error message if status == error
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    description: |
+                      - set: new fee recipient mapping is set.
+                      - updated: existing fee recipient mapping is replaced.
+                      - error: Any other status different to the above: decrypting error, I/O errors, etc.
+                    enum:
+                      - set
+                      - updated
+                      - error
+                    example: set
+                  message:
+                    type: string
+                    description: error message if status == error
+                  FeeRecipient:
+                    $ref: "../keymanager-oapi.yaml#/components/schemas/FeeRecipient"
     "400":
       $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
     "401":

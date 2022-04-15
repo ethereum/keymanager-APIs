@@ -43,7 +43,7 @@ paths:
     $ref:  './apis/local_keystores.yaml'
   /eth/v1/remotekeys:
     $ref:  './apis/remote_keystores.yaml'
-  /eth/v1/feerecipient:
+  /eth/v1/feerecipient/{pubkey}:
     $ref:  './apis/fee_recipient.yaml'
 
 components:
