@@ -78,21 +78,24 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
-
     Unauthorized:
       description: "Unauthorized, no token is found"
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
-
     Forbidden:
       description: "Forbidden, a token is found but is invalid"
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
-
+    NotFound:
+      description: "Path not found"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
     InternalError:
       description: |
         Internal server error. The server encountered an unexpected error indicative of
