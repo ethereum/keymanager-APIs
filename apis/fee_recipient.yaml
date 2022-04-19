@@ -18,7 +18,7 @@ get:
         required: true
   responses:
     "200":
-      description: Success response
+      description: success response
       content:
         application/json:
           schema:
@@ -64,14 +64,8 @@ post:
           $ref: '../keymanager-oapi.yaml#/components/schemas/Ethaddress'
           required: true
   responses:
-    "200":
-      description: ok or updated
-      content:
-        application/json:
-          schema:
-            title: SetFeeRecipientResponse
-            type: string
-            example: "updated"
+    "202":
+      description: successfully updated
     "400":
       $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
     "401":
