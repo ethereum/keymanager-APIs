@@ -61,7 +61,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: '../keymanager-oapi.yaml#/components/schemas/Ethaddress'
+          $ref: '../keymanager-oapi.yaml#/components/schemas/EthAddress'
           required: true
   responses:
     "202":

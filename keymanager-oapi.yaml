@@ -56,7 +56,7 @@ components:
   schemas:
     Pubkey:
       $ref: './types/public_key.yaml'
-    Ethaddress:
+    EthAddress:
       $ref: './types/eth_address.yaml'
     Keystore:
       $ref: './types/keystore.yaml'
