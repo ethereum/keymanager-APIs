@@ -28,6 +28,8 @@ servers:
         description: key manager API url
         default: 'https://public-mainnet-node.ethereum.org'
 tags:
+  - name: Fee Recipient
+    description: Set of endpoints for management of fee recipient.
   - name: Local Key Manager
     description: Set of endpoints for key management of local keys.
   - name: Remote Key Manager
@@ -671,6 +673,214 @@ paths:
                     description: Detailed error message
                     type: string
                     example: description of the error that occurred
+  '/eth/v1/validator/{pubkey}/feerecipient':
+    get:
+      operationId: ListFeeRecipient
+      summary: List Fee Recipient.
+      description: |
+        List the validator public key to eth address mapping for fee recipient feature on a specific public key.
+        The validator public key will return with the default fee recipient address if a specific one was not found.
+
+        WARNING: The fee_recipient is not used on Phase0 or Altair networks.
+      security:
+        - bearerAuth: []
+      tags:
+        - Fee Recipient
+      parameters:
+        - in: path
+          name: pubkey
+          schema:
+            type: string
+            pattern: '^0x[a-fA-F0-9]{96}$'
+            description: |
+              The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._
+            example: '0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a'
+          required: true
+      responses:
+        '200':
+          description: success response
+          content:
+            application/json:
+              schema:
+                title: ListFeeRecipientResponse
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - pubkey
+                      - ethaddress
+                    properties:
+                      pubkey:
+                        type: string
+                        pattern: '^0x[a-fA-F0-9]{96}$'
+                        description: |
+                          The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._
+                        example: '0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a'
+                      ethaddress:
+                        type: string
+                        description: An address on the execution (Ethereum 1) network.
+                        example: '0xabcf8e0d4e9587369b2301d0790347320302cc09'
+                        pattern: '^0x[a-fA-F0-9]{40}$'
+        '401':
+          description: 'Unauthorized, no token is found'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    description: Detailed error message
+                    type: string
+                    example: description of the error that occurred
+        '403':
+          description: 'Forbidden, a token is found but is invalid'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    description: Detailed error message
+                    type: string
+                    example: description of the error that occurred
+        '404':
+          description: Path not found
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    description: Detailed error message
+                    type: string
+                    example: description of the error that occurred
+        '500':
+          description: |
+            Internal server error. The server encountered an unexpected error indicative of
+            a serious fault in the system, or a bug.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    description: Detailed error message
+                    type: string
+                    example: description of the error that occurred
+    post:
+      operationId: SetFeeRecipient
+      summary: Set Fee Recipient.
+      description: |
+        Sets the validator client fee recipient mapping which will then update the beacon node.
+        Existing mappings for the same validator public key will be overwritten.
+        Specific Public keys not mapped will continue to use the default address for fee recipient in accordance to the startup of the validator client and beacon node.
+        Cannot specify default fee recipient address through API.
+
+        WARNING: The fee_recipient is not used on Phase0 or Altair networks.
+      security:
+        - bearerAuth: []
+      tags:
+        - Fee Recipient
+      parameters:
+        - in: path
+          name: pubkey
+          schema:
+            type: string
+            pattern: '^0x[a-fA-F0-9]{96}$'
+            description: |
+              The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._
+            example: '0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a'
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required: true
+              type: string
+              description: An address on the execution (Ethereum 1) network.
+              example: '0xabcf8e0d4e9587369b2301d0790347320302cc09'
+              pattern: '^0x[a-fA-F0-9]{40}$'
+      responses:
+        '202':
+          description: successfully updated
+        '400':
+          description: Bad request. Request was malformed and could not be processed
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    description: Detailed error message
+                    type: string
+                    example: description of the error that occurred
+        '401':
+          description: 'Unauthorized, no token is found'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    description: Detailed error message
+                    type: string
+                    example: description of the error that occurred
+        '403':
+          description: 'Forbidden, a token is found but is invalid'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    description: Detailed error message
+                    type: string
+                    example: description of the error that occurred
+        '404':
+          description: Path not found
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    description: Detailed error message
+                    type: string
+                    example: description of the error that occurred
+        '500':
+          description: |
+            Internal server error. The server encountered an unexpected error indicative of
+            a serious fault in the system, or a bug.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    description: Detailed error message
+                    type: string
+                    example: description of the error that occurred
 components:
   securitySchemes:
     bearerAuth:
@@ -684,11 +894,33 @@ components:
       description: |
         The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._
       example: '0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a'
+    EthAddress:
+      type: string
+      description: An address on the execution (Ethereum 1) network.
+      example: '0xabcf8e0d4e9587369b2301d0790347320302cc09'
+      pattern: '^0x[a-fA-F0-9]{40}$'
     Keystore:
       type: string
       description: |
         JSON serialized representation of a single keystore in EIP-2335: BLS12-381 Keystore format.
       example: '{"version":4,"uuid":"9f75a3fa-1e5a-49f9-be3d-f5a19779c6fa","path":"m/12381/3600/0/0/0","pubkey":"0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a","crypto":{"kdf":{"function":"pbkdf2","params":{"dklen":32,"c":262144,"prf":"hmac-sha256","salt":"8ff8f22ef522a40f99c6ce07fdcfc1db489d54dfbc6ec35613edf5d836fa1407"},"message":""},"checksum":{"function":"sha256","params":{},"message":"9678a69833d2576e3461dd5fa80f6ac73935ae30d69d07659a709b3cd3eddbe3"},"cipher":{"function":"aes-128-ctr","params":{"iv":"31b69f0ac97261e44141b26aa0da693f"},"message":"e8228bafec4fcbaca3b827e586daad381d53339155b034e5eaae676b715ab05e"}}}'
+    FeeRecipient:
+      type: object
+      required:
+        - pubkey
+        - ethaddress
+      properties:
+        pubkey:
+          type: string
+          pattern: '^0x[a-fA-F0-9]{96}$'
+          description: |
+            The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._
+          example: '0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a'
+        ethaddress:
+          type: string
+          description: An address on the execution (Ethereum 1) network.
+          example: '0xabcf8e0d4e9587369b2301d0790347320302cc09'
+          pattern: '^0x[a-fA-F0-9]{40}$'
     SignerDefinition:
       type: object
       required:
@@ -765,6 +997,19 @@ components:
                 example: description of the error that occurred
     Forbidden:
       description: 'Forbidden, a token is found but is invalid'
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                description: Detailed error message
+                type: string
+                example: description of the error that occurred
+    NotFound:
+      description: Path not found
       content:
         application/json:
           schema:
