@@ -1,0 +1,78 @@
+get:
+  operationId: ListFeeRecipient
+  summary: List Fee Recipient.
+  description: |
+    List the validator public key to eth address mapping for fee recipient feature on a specific public key.
+    The validator public key will return with the default fee recipient address if a specific one was not found.
+
+    WARNING: The fee_recipient is not used on Phase0 or Altair networks.
+  security:
+    - bearerAuth: []
+  tags:
+    - Fee Recipient
+  parameters:
+      - in: path
+        name: pubkey
+        schema:
+          $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+        required: true
+  responses:
+    "200":
+      description: success response
+      content:
+        application/json:
+          schema:
+            title: ListFeeRecipientResponse
+            type: object
+            required: [data]
+            properties:
+              data:
+                $ref: "../keymanager-oapi.yaml#/components/schemas/FeeRecipient"
+    "401":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
+    "403":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Forbidden"
+    "404":
+      $ref: "../keymanager-oapi.yaml#/components/responses/NotFound"
+    "500":
+      $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
+
+post:
+  operationId: SetFeeRecipient
+  summary: Set Fee Recipient.
+  description: |
+    Sets the validator client fee recipient mapping which will then update the beacon node.
+    Existing mappings for the same validator public key will be overwritten.
+    Specific Public keys not mapped will continue to use the default address for fee recipient in accordance to the startup of the validator client and beacon node.
+    Cannot specify default fee recipient address through API.
+
+    WARNING: The fee_recipient is not used on Phase0 or Altair networks.
+  security:
+    - bearerAuth: []
+  tags:
+    - Fee Recipient
+  parameters:
+      - in: path
+        name: pubkey
+        schema:
+          $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+        required: true
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../keymanager-oapi.yaml#/components/schemas/EthAddress'
+          required: true
+  responses:
+    "202":
+      description: successfully updated
+    "400":
+      $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
+    "401":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
+    "403":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Forbidden"
+    "404":
+      $ref: "../keymanager-oapi.yaml#/components/responses/NotFound"
+    "500":
+      $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"

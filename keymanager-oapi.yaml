@@ -31,6 +31,8 @@ servers:
         default: "https://public-mainnet-node.ethereum.org"
 
 tags:
+  - name: Fee Recipient
+    description: Set of endpoints for management of fee recipient.
   - name: Local Key Manager
     description: Set of endpoints for key management of local keys.
   - name: Remote Key Manager
@@ -41,6 +43,8 @@ paths:
     $ref:  './apis/local_keystores.yaml'
   /eth/v1/remotekeys:
     $ref:  './apis/remote_keystores.yaml'
+  /eth/v1/validator/{pubkey}/feerecipient:
+    $ref:  './apis/fee_recipient.yaml'
 
 components:
   securitySchemes:
@@ -52,8 +56,12 @@ components:
   schemas:
     Pubkey:
       $ref: './types/public_key.yaml'
+    EthAddress:
+      $ref: './types/eth_address.yaml'
     Keystore:
       $ref: './types/keystore.yaml'
+    FeeRecipient:
+      $ref: './types/fee_recipient.yaml'
     SignerDefinition:
       $ref: './types/signer_definition.yaml'
     ImportRemoteSignerDefinition:
@@ -70,21 +78,24 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
-
     Unauthorized:
       description: "Unauthorized, no token is found"
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
-
     Forbidden:
       description: "Forbidden, a token is found but is invalid"
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
-
+    NotFound:
+      description: "Path not found"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
     InternalError:
       description: |
         Internal server error. The server encountered an unexpected error indicative of
