@@ -23,6 +23,19 @@ A VC is also in charge of signing messages relatied to validation duties (e.g. A
 The goal of this specification is to promote interoperability between various validator client implementations to aid in the creation of common validator management tools
 such as GUIs, alerts, etc.
 
+## Client Support
+
+Learn about the Consensus Validator Clients that implement these APIs on the [Ethereum.org](https://ethereum.org/)
+
+### v1 APIS
+| Validator Client | local keymanager            | remote keymanager | fee recipient |
+| ---------------- | ----------------            | ----------------- | ------------- |
+| Prysm            | develop                     | develop           | inprogress    |
+| Teku             | production (since ??)       | ??                | ??            |
+| Lighthouse       | production (since ??)       | ??                | ??            |
+| Nimbus           | production (since ??)       | ??                | ??            |
+| Lodestar         | production (since ??)       | ??                | ??            |
+
 ## Use Cases
 
 High level information on how each API endpoint is used are listed in the [Use-cases Doc](/use-cases/README.md)
