@@ -34,7 +34,7 @@ Learn about the Consensus Validator Clients that implement these APIs on the [Et
 | Teku             | production (since ??)       | ??                | ??            |
 | Lighthouse       | production (since ??)       | ??                | ??            |
 | Nimbus           | production (since ??)       | ??                | ??            |
-| Lodestar         | production (since ??)       | ??                | ??            |
+| Lodestar         | develop                     | develop           | inprogress    |
 
 ## Use Cases
 
