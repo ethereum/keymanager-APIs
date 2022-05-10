@@ -710,7 +710,6 @@ paths:
                   data:
                     type: object
                     required:
-                      - pubkey
                       - ethaddress
                     properties:
                       pubkey:
@@ -907,7 +906,6 @@ components:
     FeeRecipient:
       type: object
       required:
-        - pubkey
         - ethaddress
       properties:
         pubkey:
