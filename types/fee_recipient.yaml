@@ -1,7 +1,5 @@
 type: object
-required: [pubkey,ethaddress]
+required: [ethaddress]
 properties:
-  pubkey:
-    $ref: './public_key.yaml'
   ethaddress:
     $ref: './eth_address.yaml'
