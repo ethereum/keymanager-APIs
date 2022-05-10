@@ -63,9 +63,9 @@ post:
         schema:
             title: SetFeeRecipientRequest
             type: object
-            required: [fee_recipient]
+            required: [ethaddress]
             properties:
-              fee_recipient:
+              ethaddress:
                 $ref: '../keymanager-oapi.yaml#/components/schemas/EthAddress'
   responses:
     "202":
