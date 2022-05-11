@@ -61,8 +61,12 @@ post:
     content:
       application/json:
         schema:
-          $ref: '../keymanager-oapi.yaml#/components/schemas/EthAddress'
-          required: true
+            title: SetFeeRecipientRequest
+            type: object
+            required: [ethaddress]
+            properties:
+              ethaddress:
+                $ref: '../keymanager-oapi.yaml#/components/schemas/EthAddress'
   responses:
     "202":
       description: successfully updated
