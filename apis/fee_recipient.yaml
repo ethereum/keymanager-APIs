@@ -88,6 +88,12 @@ delete:
     - bearerAuth: [ ]
   tags:
     - Fee Recipient
+  parameters:
+    - in: path
+      name: pubkey
+      schema:
+        $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+      required: true
   responses:
     "204":
       description: Successfully removed the mapping, or there was no mapping to remove for a key that the server is managing.
