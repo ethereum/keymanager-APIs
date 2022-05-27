@@ -31,7 +31,7 @@ Learn about the Consensus Validator Clients that implement these APIs on the [Et
 | Validator Client/Remote Managers | local keymanager | remote keymanager | fee recipient |
 | -------------------------------- | ---------------- | ----------------- | ------------- |
 | Prysm                            | production       | develop           | inprogress    |
-| Teku                             | production       | production        | inprogress    |
+| Teku                             | production       | production        | production    |
 | Lighthouse                       | production       | inprogress        | inprogress    |
 | Nimbus                           | production       | production        | inprogress    |
 | Lodestar                         | production       | develop           | inprogress    |
