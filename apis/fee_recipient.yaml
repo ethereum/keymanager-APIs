@@ -68,8 +68,18 @@ post:
               ethaddress:
                 $ref: '../keymanager-oapi.yaml#/components/schemas/EthAddress'
   responses:
-    "202":
-      description: successfully updated
+    "200":
+      description: Successfully updated
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status:
+                type: string
+                enum:
+                  - success
     "400":
       $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
     "401":
@@ -95,8 +105,18 @@ delete:
         $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
       required: true
   responses:
-    "204":
+    "200":
       description: Successfully removed the mapping, or there was no mapping to remove for a key that the server is managing.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status:
+                type: string
+                enum:
+                  - success
     "401":
       $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
     "403":
