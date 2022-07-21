@@ -1,0 +1,4 @@
+Uint256:
+  type: string
+  pattern: ^0x[0-9a-f]{0,64}$
+  example: "0x1c9c380"
