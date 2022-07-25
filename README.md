@@ -18,7 +18,7 @@ be exposed to the public Internet as the API includes multiple endpoints which c
 Currently, the only supported return data type is JSON.
 
 The validator client (VC) maintains private information related validators such as keys and an anti-slashing database.
-A VC is also in charge of signing messages relatied to validation duties (e.g. Attestations, and Beacon Blocks) as well as state changes (e.g. Exis).
+A VC is also in charge of signing messages relatied to validation duties (e.g. Attestations, and Beacon Blocks) as well as state changes (e.g. Exits).
 
 The goal of this specification is to promote interoperability between various validator client implementations to aid in the creation of common validator management tools
 such as GUIs, alerts, etc.
@@ -32,7 +32,7 @@ Learn about the Consensus Validator Clients that implement these APIs on the [Et
 | -------------------------------- | ---------------- | ----------------- | ------------- |
 | Prysm                            | production       | production        | develop       |
 | Teku                             | production       | production        | production    |
-| Lighthouse                       | production       | inprogress        | develop       |
+| Lighthouse                       | v2.1.2           | v2.3.0            | v2.4.0        |
 | Nimbus                           | production       | production        | inprogress    |
 | Lodestar                         | production       | v0.40.0           | inprogress    |
 | Web3signer                       | production       | N/A               | N/A           |
