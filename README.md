@@ -33,7 +33,7 @@ Learn about the Consensus Validator Clients that implement these APIs on the [Et
 | Prysm                            | production       | production        | develop       |
 | Teku                             | production       | production        | production    |
 | Lighthouse                       | v2.1.2           | v2.3.0            | v2.4.0        |
-| Nimbus                           | production       | production        | inprogress    |
+| Nimbus                           | production       | production        | production    |
 | Lodestar                         | production       | v0.40.0           | inprogress    |
 | Web3signer                       | production       | N/A               | N/A           |
 
