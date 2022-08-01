@@ -68,8 +68,8 @@ components:
       $ref: './types/fee_recipient.yaml'
     GasLimit:
       $ref: './types/gas_limit.yaml'
-    Uint256:
-      $ref: './types/uint.yaml#/Uint256'
+    Uint64:
+      $ref: './types/uint.yaml#/Uint64'
     SignerDefinition:
       $ref: './types/signer_definition.yaml'
     ImportRemoteSignerDefinition:

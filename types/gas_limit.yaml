@@ -4,4 +4,4 @@ properties:
   pubkey:
     $ref: './public_key.yaml'
   gas_limit:
-    $ref: './uint.yaml#/Uint256'
+    $ref: './uint.yaml#/Uint64'

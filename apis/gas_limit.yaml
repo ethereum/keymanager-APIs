@@ -72,7 +72,7 @@ post:
             required: [gas_limit]
             properties:
               gas_limit:
-                $ref: '../keymanager-oapi.yaml#/components/schemas/Uint256'
+                $ref: '../keymanager-oapi.yaml#/components/schemas/Uint64'
   responses:
     "202":
       description: successfully updated
