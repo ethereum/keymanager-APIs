@@ -1,0 +1,126 @@
+get:
+  operationId: GetGasLimit
+  summary: Get Gas Limit.
+  description: |
+    Get the execution gas limit for an individual validator. This gas limit is the one used by the
+    validator when proposing blocks via an external builder. If no limit has been set explicitly for
+    a key then the process-wide default will be returned.
+
+    The server may return a 400 status code if no external builder is configured.
+
+    WARNING: The gas_limit is not used on Phase0 or Altair networks.
+  security:
+    - bearerAuth: []
+  tags:
+    - Gas Limit
+  parameters:
+      - in: path
+        name: pubkey
+        schema:
+          $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+        required: true
+  responses:
+    "200":
+      description: success response
+      content:
+        application/json:
+          schema:
+            title: ListGasLimitResponse
+            type: object
+            required: [data]
+            properties:
+              data:
+                $ref: "../keymanager-oapi.yaml#/components/schemas/GasLimit"
+    "400":
+      $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
+    "401":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
+    "403":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Forbidden"
+    "404":
+      $ref: "../keymanager-oapi.yaml#/components/responses/NotFound"
+    "500":
+      $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
+
+post:
+  operationId: SetGasLimit
+  summary: Set Gas Limit.
+  description: |
+    Set the gas limit for an individual validator. This limit will be propagated to the beacon
+    node for use on future block proposals. The beacon node is responsible for informing external
+    block builders of the change.
+
+    The server may return a 400 status code if no external builder is configured.
+
+    WARNING: The gas_limit is not used on Phase0 or Altair networks.
+  security:
+    - bearerAuth: []
+  tags:
+    - Gas Limit
+  parameters:
+      - in: path
+        name: pubkey
+        schema:
+          $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+        required: true
+  requestBody:
+    content:
+      application/json:
+        schema:
+            title: SetGasLimitRequest
+            type: object
+            required: [gas_limit]
+            properties:
+              gas_limit:
+                $ref: '../keymanager-oapi.yaml#/components/schemas/Uint64'
+  responses:
+    "202":
+      description: successfully updated
+    "400":
+      $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
+    "401":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
+    "403":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Forbidden"
+    "404":
+      $ref: "../keymanager-oapi.yaml#/components/responses/NotFound"
+    "500":
+      $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
+delete:
+  operationId: DeleteGasLimit
+  summary: Delete Configured Gas Limit
+  description: |
+    Delete a configured gas limit for the specified public key.
+
+    The server may return a 400 status code if no external builder is configured.
+  security:
+    - bearerAuth: [ ]
+  tags:
+    - Gas Limit
+  parameters:
+    - in: path
+      name: pubkey
+      schema:
+        $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+      required: true
+  responses:
+    "204":
+      description: Successfully removed the gas limit, or there was no gas limit set for the requested public key.
+    "400":
+      $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
+    "401":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
+    "403":
+      description: A gas limit was found, but cannot be removed. This may be because the gas limit was in configuration files that cannot be updated.
+      content:
+        application/json:
+          schema:
+            $ref: "../keymanager-oapi.yaml#/components/schemas/ErrorResponse"
+    "404":
+      description: The key was not found on the server, nothing to delete.
+      content:
+        application/json:
+          schema:
+            $ref: "../keymanager-oapi.yaml#/components/schemas/ErrorResponse"
+    "500":
+      $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"

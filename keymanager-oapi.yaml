@@ -33,6 +33,8 @@ servers:
 tags:
   - name: Fee Recipient
     description: Set of endpoints for management of fee recipient.
+  - name: Gas Limit
+    description: Set of endpoints for management of gas limits.
   - name: Local Key Manager
     description: Set of endpoints for key management of local keys.
   - name: Remote Key Manager
@@ -45,6 +47,8 @@ paths:
     $ref:  './apis/remote_keystores.yaml'
   /eth/v1/validator/{pubkey}/feerecipient:
     $ref:  './apis/fee_recipient.yaml'
+  /eth/v1/validator/{pubkey}/gas_limit:
+    $ref:  './apis/gas_limit.yaml'
 
 components:
   securitySchemes:
@@ -62,6 +66,10 @@ components:
       $ref: './types/keystore.yaml'
     FeeRecipient:
       $ref: './types/fee_recipient.yaml'
+    GasLimit:
+      $ref: './types/gas_limit.yaml'
+    Uint64:
+      $ref: './types/uint.yaml#/Uint64'
     SignerDefinition:
       $ref: './types/signer_definition.yaml'
     ImportRemoteSignerDefinition:

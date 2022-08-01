@@ -1,0 +1,7 @@
+type: object
+required: [gas_limit]
+properties:
+  pubkey:
+    $ref: './public_key.yaml'
+  gas_limit:
+    $ref: './uint.yaml#/Uint64'
