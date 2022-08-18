@@ -30,10 +30,10 @@ Learn about the Consensus Validator Clients that implement these APIs on the [Et
 ### v1 APIS
 | Validator Client/Remote Managers | local keymanager | remote keymanager | fee recipient | gas limit |
 | -------------------------------- | ---------------- | ----------------- | ------------- | --------- |
-| Prysm                            | production       | production        | develop       | -         |
-| Teku                             | production       | production        | production    | -         |
-| Lighthouse                       | v2.1.2           | v2.3.0            | v2.4.0        | -         |
-| Nimbus                           | production       | production        | inprogress    | -         |
+| Prysm                            | production       | production        | production    | inprogress|
+| Teku                             | production       | production        | production    | inprogress|
+| Lighthouse                       | v2.1.2           | v2.3.0            | v2.4.0        | inprogress|
+| Nimbus                           | production       | production        | 22.7.0        | -         |
 | Lodestar                         | production       | v0.40.0           | inprogress    | -         |
 | Web3signer                       | production       | N/A               | N/A           | N/A       |
 
@@ -49,7 +49,7 @@ Further detail expected behavior and error states of the APIs are listed in the 
 
 To render the spec in a browser you will need an HTTP server to serve the `index.html` file.
 Rendering occurs client-side in JavaScript, so no changes are required to the HTML file between
-edits.
+edits.   
 
 ##### Python
 
