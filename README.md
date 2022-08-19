@@ -1,6 +1,7 @@
 # Ethereum keymanager APIs
 
 ![CI](https://github.com/ethereum/keymanager-APIs/workflows/CI/badge.svg)
+[![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/ethereum/keymanager-APIs/badge)](https://www.gitpoap.io/gh/ethereum/keymanager-APIs)
 
 **_Warning: Super fresh repo, expect rapid iteration and breaking changes_**
 
