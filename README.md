@@ -31,7 +31,7 @@ Learn about the Consensus Validator Clients that implement these APIs on the [Et
 ### v1 APIS
 | Validator Client/Remote Managers | local keymanager | remote keymanager | fee recipient | gas limit  |
 | -------------------------------- | ---------------- | ----------------- | ------------- |------------|
-| Prysm                            | production       | production        | production    | inprogress |
+| Prysm                            | production       | production        | production    | develop    |
 | Teku                             | production       | production        | production    | develop    |
 | Lighthouse                       | v2.1.2           | v2.3.0            | v2.4.0        | v3.0.0     |
 | Nimbus                           | production       | production        | 22.7.0        | -          |
