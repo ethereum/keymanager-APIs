@@ -1,5 +1,5 @@
 get:
-  operationId: ListFeeRecipient
+  operationId: listFeeRecipient
   summary: List Fee Recipient.
   description: |
     List the validator public key to eth address mapping for fee recipient feature on a specific public key.
@@ -38,7 +38,7 @@ get:
       $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
 
 post:
-  operationId: SetFeeRecipient
+  operationId: setFeeRecipient
   summary: Set Fee Recipient.
   description: |
     Sets the validator client fee recipient mapping which will then update the beacon node.
@@ -81,7 +81,7 @@ post:
     "500":
       $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
 delete:
-  operationId: DeleteFeeRecipient
+  operationId: deleteFeeRecipient
   summary: Delete Configured Fee Recipient
   description: Delete a configured fee recipient mapping for the specified public key.
   security:
