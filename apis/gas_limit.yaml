@@ -1,5 +1,5 @@
 get:
-  operationId: GetGasLimit
+  operationId: getGasLimit
   summary: Get Gas Limit.
   description: |
     Get the execution gas limit for an individual validator. This gas limit is the one used by the
@@ -43,7 +43,7 @@ get:
       $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
 
 post:
-  operationId: SetGasLimit
+  operationId: setGasLimit
   summary: Set Gas Limit.
   description: |
     Set the gas limit for an individual validator. This limit will be propagated to the beacon
@@ -87,7 +87,7 @@ post:
     "500":
       $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
 delete:
-  operationId: DeleteGasLimit
+  operationId: deleteGasLimit
   summary: Delete Configured Gas Limit
   description: |
     Delete a configured gas limit for the specified public key.
