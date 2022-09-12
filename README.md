@@ -18,8 +18,8 @@ The API is a REST interface, accessed via HTTP. The API should not, unless prote
 be exposed to the public Internet as the API includes multiple endpoints which can control the state of a deployed validator (e.g. Exits, etc).
 Currently, the only supported return data type is JSON.
 
-The validator client (VC) maintains private information related validators such as keys and an anti-slashing database.
-A VC is also in charge of signing messages relatied to validation duties (e.g. Attestations, and Beacon Blocks) as well as state changes (e.g. Exits).
+The validator client (VC) maintains private information-related validators such as keys and an anti-slashing database.
+A VC is also in charge of signing messages related to validation duties (e.g. Attestations, and Beacon Blocks) as well as state changes (e.g. Exits).
 
 The goal of this specification is to promote interoperability between various validator client implementations to aid in the creation of common validator management tools
 such as GUIs, alerts, etc.
@@ -40,11 +40,11 @@ Learn about the Consensus Validator Clients that implement these APIs on the [Et
 
 ## Use Cases
 
-High level information on how each API endpoint is used are listed in the [Use-cases Doc](/use-cases/README.md)
+High-level information on how each API endpoint is used are listed in the [Use-cases Doc](/use-cases/README.md)
 
 ## Flows
 
-Further detail expected behavior and error states of the APIs are listed in the [Flows Doc](/flows/README.md)
+Further detail on expected behavior and error states of the APIs are listed in the [Flows Doc](/flows/README.md)
 
 ## Running API Browser Locally
 
