@@ -28,6 +28,8 @@ get:
             properties:
               data:
                 $ref: "../keymanager-oapi.yaml#/components/schemas/FeeRecipient"
+    "400":
+      $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
     "401":
       $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
     "403":
@@ -97,6 +99,8 @@ delete:
   responses:
     "204":
       description: Successfully removed the mapping, or there was no mapping to remove for a key that the server is managing.
+    "400":
+      $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
     "401":
       $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
     "403":
