@@ -1,14 +1,11 @@
 
 post:
-  operationId: submitVoluntaryExit
-  summary: Submit voluntary exit for an active validator
+  operationId: signVoluntaryExit
+  summary: Create and sign a voluntary exit message for an active validator
   description: |
-    Initiate a voluntary exit for an active validator, identified by a public key known to the validator client. This 
-    endpoint creates a `SignedVoluntaryExit` object, signed by with the given validator's key, and submit it to the 
-    beacon node's [submitPoolVoluntaryExit](https://ethereum.github.io/beacon-APIs/?urls.primaryName=dev#/Beacon/submitPoolVoluntaryExit) endpoint. 
-
-    Note that this is a one-way operation on a validator key and cannot be reverted once the request is successfully 
-    submitted.
+    Create a signed voluntary exit message for an active validator, identified by a public key known to the validator 
+    client. This endpoint returns a `SignedVoluntaryExit` object, which can be used to initiate voluntary exit via the 
+    beacon node's [submitPoolVoluntaryExit](https://ethereum.github.io/beacon-APIs/#/Beacon/submitPoolVoluntaryExit) endpoint.
   security:
     - bearerAuth: []
   tags:
@@ -21,22 +18,23 @@ post:
         schema:
           $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
       - in: query
-        name: confirm
-        description: "Explicit opt-in parameter to confirm the voluntary exit."
-        required: false
-        schema:
-          type: string
-          enum:
-            - yes
-      - in: query
         name: epoch
-        required: false
-        description: "Minimum epoch for processing exit. Defaults to the current epoch if not set."
+        required: true
+        description: "Minimum epoch for processing exit."
         schema:
           $ref: '../keymanager-oapi.yaml#/components/schemas/Uint64'
   responses:
     "200":
-      description: Validator exit is submitted to the beacon node
+      description: Success response
+      content:
+        application/json:
+          schema:
+            title: SignVoluntaryExitResponse
+            type: object
+            required: [data]
+            properties:
+              data:
+                $ref: "../keymanager-oapi.yaml#/components/schemas/SignedVoluntaryExit"
     "400":
       $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
     "401":

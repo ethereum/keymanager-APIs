@@ -82,6 +82,8 @@ components:
       $ref: './types/slashing_protection.yaml'
     ErrorResponse:
       $ref: './types/error_response.yaml'
+    SignedVoluntaryExit:
+      $ref: './types/voluntary_exit.yaml#/SignedVoluntaryExit'
 
   responses:
     BadRequest:
