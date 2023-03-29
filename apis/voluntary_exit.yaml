@@ -19,8 +19,8 @@ post:
           $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
       - in: query
         name: epoch
-        required: true
-        description: "Minimum epoch for processing exit."
+        required: false
+        description: "Minimum epoch for processing exit. Defaults to the current epoch if not set."
         schema:
           $ref: '../keymanager-oapi.yaml#/components/schemas/Uint64'
   responses:
