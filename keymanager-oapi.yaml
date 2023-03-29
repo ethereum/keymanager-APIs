@@ -32,15 +32,15 @@ servers:
 
 tags:
   - name: Fee Recipient
-    description: Set of endpoints for management of fee recipient.
+    description: Validator client only - set of endpoints for management of fee recipient. Requires access to a beacon node.
   - name: Gas Limit
-    description: Set of endpoints for management of gas limits.
+    description: Validator client only - set of endpoints for management of gas limits. Requires access to a beacon node.
   - name: Local Key Manager
     description: Set of endpoints for key management of local keys.
   - name: Remote Key Manager
     description: Set of endpoints for key management of external keys.
   - name: Voluntary Exit
-    description: Set of endpoints for voluntary exits.
+    description: Validator client only - set of endpoints for voluntary exits.
 
 paths:
   /eth/v1/keystores:
