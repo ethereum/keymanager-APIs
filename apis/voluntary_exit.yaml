@@ -1,0 +1,47 @@
+
+post:
+  operationId: signVoluntaryExit
+  summary: Create and sign a voluntary exit message for an active validator
+  description: |
+    Create a signed voluntary exit message for an active validator, identified by a public key known to the validator 
+    client. This endpoint returns a `SignedVoluntaryExit` object, which can be used to initiate voluntary exit via the 
+    beacon node's [submitPoolVoluntaryExit](https://ethereum.github.io/beacon-APIs/#/Beacon/submitPoolVoluntaryExit) endpoint.
+  security:
+    - bearerAuth: []
+  tags:
+    - Voluntary Exit
+  parameters:
+      - in: path
+        name: pubkey
+        description: "Public key of an active validator known to the validator client."
+        required: true
+        schema:
+          $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+      - in: query
+        name: epoch
+        required: false
+        description: "Minimum epoch for processing exit. Defaults to the current epoch if not set."
+        schema:
+          $ref: '../keymanager-oapi.yaml#/components/schemas/Uint64'
+  responses:
+    "200":
+      description: Success response
+      content:
+        application/json:
+          schema:
+            title: SignVoluntaryExitResponse
+            type: object
+            required: [data]
+            properties:
+              data:
+                $ref: "../keymanager-oapi.yaml#/components/schemas/SignedVoluntaryExit"
+    "400":
+      $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
+    "401":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
+    "403":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Forbidden"
+    "404":
+      $ref: "../keymanager-oapi.yaml#/components/responses/NotFound"
+    "500":
+      $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
