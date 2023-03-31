@@ -32,9 +32,9 @@ servers:
 
 tags:
   - name: Fee Recipient
-    description: Set of endpoints for management of fee recipient.
+    description: Set of endpoints for management of fee recipient. Available on validator clients only and requires access to a beacon node.
   - name: Gas Limit
-    description: Set of endpoints for management of gas limits.
+    description: Set of endpoints for management of gas limits. Available on validator clients only and requires access to a beacon node.
   - name: Local Key Manager
     description: Set of endpoints for key management of local keys.
   - name: Remote Key Manager
