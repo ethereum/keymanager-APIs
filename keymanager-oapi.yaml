@@ -1040,7 +1040,7 @@ paths:
                         example: '0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a'
                       gas_limit:
                         type: string
-                        pattern: '^[1-9][0-9]{0,19}$'
+                        pattern: '^(0|[1-9][0-9]{0,19})$'
                         example: '30000000'
         '400':
           description: Bad request. Request was malformed and could not be processed
@@ -1145,7 +1145,7 @@ paths:
               properties:
                 gas_limit:
                   type: string
-                  pattern: '^[1-9][0-9]{0,19}$'
+                  pattern: '^(0|[1-9][0-9]{0,19})$'
                   example: '30000000'
       responses:
         '202':
@@ -1337,7 +1337,7 @@ paths:
           description: Minimum epoch for processing exit. Defaults to the current epoch if not set.
           schema:
             type: string
-            pattern: '^[1-9][0-9]{0,19}$'
+            pattern: '^(0|[1-9][0-9]{0,19})$'
             example: '30000000'
       responses:
         '200':
@@ -1361,13 +1361,13 @@ paths:
                           epoch:
                             allOf:
                               - type: string
-                                pattern: '^[1-9][0-9]{0,19}$'
+                                pattern: '^(0|[1-9][0-9]{0,19})$'
                                 example: '30000000'
                               - description: Minimum epoch for processing exit.
                           validator_index:
                             allOf:
                               - type: string
-                                pattern: '^[1-9][0-9]{0,19}$'
+                                pattern: '^(0|[1-9][0-9]{0,19})$'
                                 example: '30000000'
                               - description: Index of the exiting validator.
                       signature:
@@ -1494,11 +1494,11 @@ components:
           example: '0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a'
         gas_limit:
           type: string
-          pattern: '^[1-9][0-9]{0,19}$'
+          pattern: '^(0|[1-9][0-9]{0,19})$'
           example: '30000000'
     Uint64:
       type: string
-      pattern: '^[1-9][0-9]{0,19}$'
+      pattern: '^(0|[1-9][0-9]{0,19})$'
       example: '30000000'
     SignerDefinition:
       type: object
@@ -1558,13 +1558,13 @@ components:
             epoch:
               allOf:
                 - type: string
-                  pattern: '^[1-9][0-9]{0,19}$'
+                  pattern: '^(0|[1-9][0-9]{0,19})$'
                   example: '30000000'
                 - description: Minimum epoch for processing exit.
             validator_index:
               allOf:
                 - type: string
-                  pattern: '^[1-9][0-9]{0,19}$'
+                  pattern: '^(0|[1-9][0-9]{0,19})$'
                   example: '30000000'
                 - description: Index of the exiting validator.
         signature:
