@@ -1,0 +1,122 @@
+get:
+  operationId: getGraffiti
+  summary: Get Graffiti
+  description: |
+    Get the graffiti for an individual validator. This graffiti is the one used by the
+    validator when proposing blocks. If no graffiti has been set explicitly for
+    a key then the process-wide default will be returned.
+  security:
+    - bearerAuth: []
+  tags:
+    - Graffiti
+  parameters:
+    - in: path
+      name: pubkey
+      schema:
+        $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+      required: true
+  responses:
+    "200":
+      description: success response
+      content:
+        application/json:
+          schema:
+            title: ListGraffitiResponse
+            type: object
+            required: [data]
+            properties:
+              data:
+                type: object
+                required: [graffiti]
+                properties:
+                  pubkey:
+                    $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+                  graffiti:
+                    $ref: "../keymanager-oapi.yaml#/components/schemas/Graffiti"
+    "400":
+      $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
+    "401":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
+    "403":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Forbidden"
+    "404":
+      $ref: "../keymanager-oapi.yaml#/components/responses/NotFound"
+    "500":
+      $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
+
+post:
+  operationId: setGraffiti
+  summary: Set Graffiti
+  description: |
+    Set the graffiti for an individual validator. This graffiti will be used instead
+    of the process-wide default by the validator when proposing blocks.
+  security:
+    - bearerAuth: []
+  tags:
+    - Graffiti
+  parameters:
+    - in: path
+      name: pubkey
+      schema:
+        $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+      required: true
+  requestBody:
+    content:
+      application/json:
+        schema:
+          title: SetGraffitiRequest
+          type: object
+          required: [graffiti]
+          properties:
+            graffiti:
+              $ref: "../keymanager-oapi.yaml#/components/schemas/Graffiti"
+  responses:
+    "202":
+      description: successfully updated
+    "400":
+      $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
+    "401":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
+    "403":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Forbidden"
+    "404":
+      $ref: "../keymanager-oapi.yaml#/components/responses/NotFound"
+    "500":
+      $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
+
+delete:
+  operationId: deleteGraffiti
+  summary: Delete Configured Graffiti
+  description: |
+    Delete the configured graffiti for the specified public key.
+  security:
+    - bearerAuth: []
+  tags:
+    - Graffiti
+  parameters:
+    - in: path
+      name: pubkey
+      schema:
+        $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+      required: true
+  responses:
+    "204":
+      description: Successfully removed the graffiti, or there was no graffiti set for the requested public key.
+    "400":
+      $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
+    "401":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
+    "403":
+      description: A graffiti was found, but cannot be removed. This may be because the graffit was in configuration files that cannot be updated.
+      content:
+        application/json:
+          schema:
+            $ref: "../keymanager-oapi.yaml#/components/schemas/ErrorResponse"
+    "404":
+      description: The key was not found on the server, nothing to delete.
+      content:
+        application/json:
+          schema:
+            $ref: "../keymanager-oapi.yaml#/components/schemas/ErrorResponse"
+    "500":
+      $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"

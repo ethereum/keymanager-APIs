@@ -1,0 +1,3 @@
+type: string
+description: "Arbitrary data validator wants to include in block."
+example: "plain text value"

@@ -29,14 +29,15 @@ such as GUIs, alerts, etc.
 Learn about the Consensus Validator Clients that implement these APIs on the [Ethereum.org](https://ethereum.org/)
 
 ### v1 APIS
-| Validator Client/Remote Managers | local keymanager | remote keymanager | fee recipient | gas limit  |
-| -------------------------------- | ---------------- | ----------------- | ------------- |------------|
-| Prysm                            | production       | production        | production    | production |
-| Teku                             | production       | production        | production    | production |
-| Lighthouse                       | v2.1.2           | v2.3.0            | v2.4.0        | v3.0.0     |
-| Nimbus                           | production       | production        | 22.7.0        | -          |
-| Lodestar                         | production       | v0.40.0           | production    | production |
-| Web3signer                       | production       | N/A               | N/A           | N/A        |
+
+| Validator Client/Remote Managers | local keymanager | remote keymanager | fee recipient | gas limit  | graffiti |
+| -------------------------------- | ---------------- | ----------------- | ------------- | ---------- | -------- |
+| Prysm                            | production       | production        | production    | production | -        |
+| Teku                             | production       | production        | production    | production | -        |
+| Lighthouse                       | v2.1.2           | v2.3.0            | v2.4.0        | v3.0.0     | -        |
+| Nimbus                           | production       | production        | 22.7.0        | -          | -        |
+| Lodestar                         | production       | v0.40.0           | production    | production | v1.12.0  |
+| Web3signer                       | production       | N/A               | N/A           | N/A        | N/A      |
 
 ## Use Cases
 
@@ -50,7 +51,7 @@ Further detail on expected behavior and error states of the APIs are listed in t
 
 To render the spec in a browser you will need an HTTP server to serve the `index.html` file.
 Rendering occurs client-side in JavaScript, so no changes are required to the HTML file between
-edits.   
+edits.
 
 ##### Python
 
