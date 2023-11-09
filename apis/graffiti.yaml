@@ -21,7 +21,7 @@ get:
       content:
         application/json:
           schema:
-            title: ListGraffitiResponse
+            title: GraffitiResponse
             type: object
             required: [data]
             properties:
