@@ -3,8 +3,8 @@ get:
   summary: Get Graffiti
   description: |
     Get the graffiti for an individual validator. This graffiti is the one used by the
-    validator when proposing blocks. If no graffiti has been set explicitly for
-    a key then the process-wide default will be returned.
+    validator when proposing blocks. If no graffiti is set explicitly, returns
+    the process-wide default.
   security:
     - bearerAuth: []
   tags:
@@ -48,8 +48,7 @@ post:
   operationId: setGraffiti
   summary: Set Graffiti
   description: |
-    Set the graffiti for an individual validator. This graffiti will be used instead
-    of the process-wide default by the validator when proposing blocks.
+    Set the graffiti for an individual validator.
   security:
     - bearerAuth: []
   tags:
