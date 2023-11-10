@@ -48,7 +48,8 @@ post:
   operationId: setGraffiti
   summary: Set Graffiti
   description: |
-    Set the graffiti for an individual validator.
+    Set the graffiti for an individual validator. This graffiti will be used instead
+    of the process-wide default by the validator when proposing blocks.
   security:
     - bearerAuth: []
   tags:
@@ -87,7 +88,8 @@ delete:
   operationId: deleteGraffiti
   summary: Delete Configured Graffiti
   description: |
-    Delete the configured graffiti for the specified public key.
+    Delete the configured graffiti for the specified public key. The process-wide default
+    will be used by the validator when proposing blocks.
   security:
     - bearerAuth: []
   tags:
