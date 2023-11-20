@@ -2,9 +2,7 @@ get:
   operationId: getGraffiti
   summary: Get Graffiti
   description: |
-    Get the graffiti for an individual validator. This graffiti is the one used by the
-    validator when proposing blocks. If no graffiti is set explicitly, returns
-    the process-wide default.
+    Get the graffiti for an individual validator.
   security:
     - bearerAuth: []
   tags:
@@ -48,8 +46,7 @@ post:
   operationId: setGraffiti
   summary: Set Graffiti
   description: |
-    Set the graffiti for an individual validator. This graffiti will be used instead
-    of the process-wide default by the validator when proposing blocks.
+    Set the graffiti for an individual validator.
   security:
     - bearerAuth: []
   tags:
@@ -88,8 +85,7 @@ delete:
   operationId: deleteGraffiti
   summary: Delete Configured Graffiti
   description: |
-    Delete the configured graffiti for the specified public key. The process-wide default
-    will be used by the validator when proposing blocks.
+    Delete the configured graffiti for the specified public key.
   security:
     - bearerAuth: []
   tags:
