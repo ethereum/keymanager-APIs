@@ -2,7 +2,8 @@ get:
   operationId: getGraffiti
   summary: Get Graffiti
   description: |
-    Get the graffiti for an individual validator.
+    Get the graffiti for an individual validator. If no graffiti is set
+    explicitly, returns the process-wide default.
   security:
     - bearerAuth: []
   tags:
@@ -104,7 +105,7 @@ delete:
     "401":
       $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
     "403":
-      description: A graffiti was found, but cannot be removed. This may be because the graffit was in configuration files that cannot be updated.
+      description: A graffiti was found, but cannot be removed. This may be because the graffiti was in configuration files that cannot be updated.
       content:
         application/json:
           schema:
