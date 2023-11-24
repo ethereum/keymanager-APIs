@@ -1,0 +1,3 @@
+type: string
+description: "Arbitrary data to set in the graffiti field of BeaconBlockBody"
+example: "plain text value"

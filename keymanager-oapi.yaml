@@ -35,6 +35,8 @@ tags:
     description: Set of endpoints for management of fee recipient.
   - name: Gas Limit
     description: Set of endpoints for management of gas limits.
+  - name: Graffiti
+    description: Set of endpoints for management of graffiti.
   - name: Local Key Manager
     description: Set of endpoints for key management of local keys.
   - name: Remote Key Manager
@@ -51,6 +53,8 @@ paths:
     $ref:  './apis/fee_recipient.yaml'
   /eth/v1/validator/{pubkey}/gas_limit:
     $ref:  './apis/gas_limit.yaml'
+  /eth/v1/validator/{pubkey}/graffiti:
+    $ref:  './apis/graffiti.yaml'
   /eth/v1/validator/{pubkey}/voluntary_exit:
     $ref: './apis/voluntary_exit.yaml'
 
@@ -72,6 +76,8 @@ components:
       $ref: './types/fee_recipient.yaml'
     GasLimit:
       $ref: './types/gas_limit.yaml'
+    Graffiti:
+      $ref: './types/graffiti.yaml'
     Uint64:
       $ref: './types/uint.yaml#/Uint64'
     SignerDefinition:
