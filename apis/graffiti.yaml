@@ -59,6 +59,7 @@ post:
         $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
       required: true
   requestBody:
+    required: true
     content:
       application/json:
         schema:
