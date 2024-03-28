@@ -14,10 +14,10 @@ info:
 
     All sensitive routes MUST be authenticated with a token.
 
-    The keymanager binary SHOULD accept a configuration parameter: `token-file`, which designates a file containing the hex-encoded token
+    The key manager binary SHOULD accept a configuration parameter: `token-file`, which designates a file containing the hex-encoded token
     of at least 256 bits. If such a parameter is not given, the client SHOULD generate such a token and write it to a file, to be reused
     across multiple restarts of the binary. If such a parameter is given, but the file or token cannot be read, the client SHOULD treat this
-    as an error: either abort the startup, or show the error and continue without exposing the keymanager routes.
+    as an error: either abort the startup, or show the error and continue without exposing the key manager routes.
   version: "v1.0.0"
   contact:
     name: Ethereum Github
