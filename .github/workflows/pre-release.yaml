@@ -1,12 +1,11 @@
-name: Release
+name: Pre-release
 
 on:
   push:
     tags:
-      - "v*"
-      - "!v*-alpha.*"
-      - "!v*-beta.*"
-      - "!v*-rc.*"
+      - "v*-alpha.*"
+      - "v*-beta.*"
+      - "v*-rc.*"
 
 jobs:
   release:
@@ -21,19 +20,6 @@ jobs:
         run: "swagger-cli bundle ./keymanager-oapi.yaml -r -t yaml -o ./deploy/keymanager-oapi.yaml"
       - name: Bundle json spec
         run: "swagger-cli bundle ./keymanager-oapi.yaml -r -t json -o ./deploy/keymanager-oapi.json"
-      - name: Update index.html
-        run: |
-          sed -i "/urls:/a \            {url: \"./releases/${{ github.ref_name }}/keymanager-oapi.json\", name: \"${{ github.ref_name }}\"}," ./index.html
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Release ${{ github.ref_name }}"
-          branch: release-${{ github.ref_name }}
-          title: "Release ${{ github.ref_name }}"
-          body: ""
-          base: master
-          add-paths: index.html
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v2
@@ -43,7 +29,7 @@ jobs:
           name: ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
           draft: false
-          prerelease: false
+          prerelease: true
           files: |
             ./deploy/keymanager-oapi.yaml
             ./deploy/keymanager-oapi.json

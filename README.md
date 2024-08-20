@@ -3,8 +3,6 @@
 ![CI](https://github.com/ethereum/keymanager-APIs/workflows/CI/badge.svg)
 [![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/ethereum/keymanager-APIs/badge)](https://www.gitpoap.io/gh/ethereum/keymanager-APIs)
 
-**_Warning: Super fresh repo, expect rapid iteration and breaking changes_**
-
 Collection of RESTful APIs provided by Ethereum consensus keymanagers
 
 API browser: [https://ethereum.github.io/keymanager-APIs/](https://ethereum.github.io/keymanager-APIs/)
@@ -55,15 +53,15 @@ edits.
 
 ##### Python
 
-```
-python2 -m SimpleHTTPServer 8080
+```sh
+python -m http.server 8080
 ```
 
 The API spec will render on [http://localhost:8080](http://localhost:8080).
 
 ##### NodeJs
 
-```
+```sh
 npm install simplehttpserver -g
 
 # OR
@@ -75,38 +73,51 @@ simplehttpserver
 
 The API spec will render on [http://localhost:8000](http://localhost:8000).
 
+### Usage
+
+Local changes will be observable if "dev" is selected in the "Select a definition" drop-down in the web UI.
+
+Users may need to tick the "Disable Cache" box in their browser's developer tools to see changes after modifying the source.
+
 ## Contributing
 
-The API spec is linted for issues before PRs are merged.
+Api spec is checked for lint errors before merge.
 
-To run the linter locally, install `spectral`:
+To run lint locally, install linter with
 
-```
-npm install -g @stoplight/spectral
+```sh
+npm install -g @redocly/cli
 
 # OR
 
-yarn global add @stoplight/spectral
+yarn global add @redocly/cli
 ```
 
-and run with
+and run lint with
 
-```
-spectral lint keymanager-oapi.yaml
+```sh
+redocly lint keymanager-oapi.yaml
 ```
 
 ## Releasing
 
-1. Create and push a tag
+This repository supports both stable and pre-releases. The version of the next release has to be
+determined based on the changes in `master` branch since the last stable release. It is recommended
+to create a pre-release before releasing a new stable version.
 
-   - Make sure info.version in keymanager-oapi.yaml file is updated before tagging.
-   - CD will create github release and upload bundled spec file
+### Stable releases
 
-2. Add release entrypoint in index.html
+Steps to create a new stable release:
 
-In SwaggerUIBundle configuration (inside index.html file), add another entry in "urls" field (SwaggerUI will load first item as default).
-Entries should be in the following format (replace `<tag>` with the real tag name from step 1):
+- Create and push a tag with the version of the release, e.g. `v1.1.0`
+- CD will create the github release, upload bundled spec files, and open a release PR
+- Review, approve and merge the release PR to `master` branch
 
-```javascript
-         {url: "https://github.com/ethereum/keymanager-APIs/releases/download/<tag>/keymanager-oapi.yaml", name: "<tag>"},
-```
+### Pre-releases
+
+Steps to create a new pre-release:
+
+- Create and push a tag with the version of the release, e.g. `v1.1.0-alpha.0`
+- CD will create the github release and upload bundled spec files
+
+Pre-releases will not be listed in `index.html` and are intended to allow early testing against the spec.
