@@ -1,20 +1,23 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - "master"
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm i -g @apidevtools/swagger-cli@4 @redocly/cli@1.19.0
 
       - name: Lint spec
-        uses: vaibhav-jain/spectral-action/@v2.6.1
-        with:
-          file_path: keymanager-oapi.yaml
+        run: redocly lint ./keymanager-oapi.yaml
 
       - name: Bundle spec
-        uses: mpetrunic/swagger-cli-action@v1.0.0
-        with:
-          command: "bundle ./keymanager-oapi.yaml -r -t yaml -o ./bundle.yaml"
+        run: "swagger-cli bundle ./keymanager-oapi.yaml -r -t yaml -o ./deploy/keymanager-oapi.yaml"
