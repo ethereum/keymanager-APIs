@@ -17,7 +17,7 @@ info:
     of at least 256 bits. If such a parameter is not given, the client SHOULD generate such a token and write it to a file, to be reused
     across multiple restarts of the binary. If such a parameter is given, but the file or token cannot be read, the client SHOULD treat this
     as an error: either abort the startup, or show the error and continue without exposing the key manager routes.
-  version: v1.0.0
+  version: Dev
   contact:
     name: Ethereum Github
     url: 'https://github.com/ethereum/keymanager-APIs/issues'
@@ -29,7 +29,7 @@ servers:
     variables:
       server_url:
         description: key manager API url
-        default: 'https://public-mainnet-node.ethereum.org'
+        default: 'http://localhost/'
 tags:
   - name: Fee Recipient
     description: Set of endpoints for management of fee recipient.
