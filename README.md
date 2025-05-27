@@ -35,6 +35,7 @@ Learn about the Consensus Validator Clients that implement these APIs on the [Et
 | Lighthouse                       | v2.1.2           | v2.3.0            | v2.4.0        | v3.0.0     | -        |
 | Nimbus                           | production       | production        | 22.7.0        | -          | -        |
 | Lodestar                         | v0.35.0          | v0.40.0           | v1.2.0        | v1.2.0     | v1.12.0  |
+| Vero                             | N/A              | v1.1.0            | v1.1.0        | v1.1.0     | v1.1.0   |
 | Web3signer                       | production       | N/A               | N/A           | N/A        | N/A      |
 
 ## Use Cases
