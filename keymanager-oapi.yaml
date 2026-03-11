@@ -114,7 +114,7 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
     NotFound:
-      description: "Path not found"
+      description: "The key was not found on the server"
       content:
         application/json:
           schema:
