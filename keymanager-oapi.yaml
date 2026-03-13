@@ -776,7 +776,7 @@ paths:
                     type: string
                     example: description of the error that occurred
         '404':
-          description: Path not found
+          description: The key was not found on the server
           content:
             application/json:
               schema:
@@ -885,7 +885,7 @@ paths:
                     type: string
                     example: description of the error that occurred
         '404':
-          description: Path not found
+          description: The key was not found on the server
           content:
             application/json:
               schema:
@@ -973,7 +973,7 @@ paths:
                     type: string
                     example: description of the error that occurred
         '404':
-          description: 'The key was not found on the server, nothing to delete.'
+          description: The key was not found on the server
           content:
             application/json:
               schema:
@@ -1092,7 +1092,7 @@ paths:
                     type: string
                     example: description of the error that occurred
         '404':
-          description: Path not found
+          description: The key was not found on the server
           content:
             application/json:
               schema:
@@ -1200,7 +1200,7 @@ paths:
                     type: string
                     example: description of the error that occurred
         '404':
-          description: Path not found
+          description: The key was not found on the server
           content:
             application/json:
               schema:
@@ -1291,7 +1291,7 @@ paths:
                     type: string
                     example: description of the error that occurred
         '404':
-          description: 'The key was not found on the server, nothing to delete.'
+          description: The key was not found on the server
           content:
             application/json:
               schema:
@@ -1405,7 +1405,7 @@ paths:
                     type: string
                     example: description of the error that occurred
         '404':
-          description: Path not found
+          description: The key was not found on the server
           content:
             application/json:
               schema:
@@ -1508,7 +1508,7 @@ paths:
                     type: string
                     example: description of the error that occurred
         '404':
-          description: Path not found
+          description: The key was not found on the server
           content:
             application/json:
               schema:
@@ -1597,7 +1597,7 @@ paths:
                     type: string
                     example: description of the error that occurred
         '404':
-          description: 'The key was not found on the server, nothing to delete.'
+          description: The key was not found on the server
           content:
             application/json:
               schema:
@@ -1731,7 +1731,7 @@ paths:
                     type: string
                     example: description of the error that occurred
         '404':
-          description: Path not found
+          description: The key was not found on the server
           content:
             application/json:
               schema:
@@ -1933,7 +1933,7 @@ components:
                 type: string
                 example: description of the error that occurred
     NotFound:
-      description: Path not found
+      description: The key was not found on the server
       content:
         application/json:
           schema:
