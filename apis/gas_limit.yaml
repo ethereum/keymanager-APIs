@@ -50,6 +50,8 @@ post:
     node for use on future block proposals. The beacon node is responsible for informing external
     block builders of the change.
 
+    NOTE: Post Gloas, individual validator updates update the global default instead.
+
     The server may return a 400 status code if no external builder is configured.
 
     WARNING: The gas_limit is not used on Phase0 or Altair networks.
