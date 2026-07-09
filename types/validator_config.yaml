@@ -6,7 +6,7 @@ ValidatorConfig:
     atomic document. Every field is optional: an absent field inherits its value from the
     `default_config`, and where the default is also absent, from the client's built-in behavior.
 
-    Field resolution order (normative). For key-level fields (`fee_recipient`, `gas_limit`,
+    Field resolution order (normative). For key-level fields (`fee_recipient`, `target_gas_limit`,
     `graffiti`, and the fields of `builder` itself): the key's document, then `default_config`,
     then the client default. For per-builder fields (`max_execution_payment`, `min_bid`,
     `builder_boost_factor`, `proxy`): the `BuilderEntry`, then the enclosing `BuilderConfig`
@@ -15,7 +15,7 @@ ValidatorConfig:
   properties:
     fee_recipient:
       $ref: "../keymanager-oapi.yaml#/components/schemas/EthAddress"
-    gas_limit:
+    target_gas_limit:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
         - description: |
