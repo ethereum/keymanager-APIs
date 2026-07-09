@@ -1,0 +1,153 @@
+ValidatorConfig:
+  type: object
+  additionalProperties: false
+  description: |
+    The full set of block-production preferences for a single validator public key, managed as one
+    atomic document. Every field is optional: an absent field inherits its value from the
+    `default_config`, and where the default is also absent, from the client's built-in behavior.
+
+    Field resolution order (normative). For key-level fields (`fee_recipient`, `gas_limit`,
+    `graffiti`, and the fields of `builder` itself): the key's document, then `default_config`,
+    then the client default. For per-builder fields (`max_execution_payment`, `min_bid`,
+    `builder_boost_factor`, `proxy`): the `BuilderEntry`, then the enclosing `BuilderConfig`
+    fallback of the same name, then the same two levels within `default_config`, then the client
+    default.
+  properties:
+    fee_recipient:
+      $ref: "../keymanager-oapi.yaml#/components/schemas/EthAddress"
+    gas_limit:
+      allOf:
+        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
+        - description: |
+            The gas limit the validator targets for its blocks. Communicated to builders and used
+            for local block production and gas limit voting.
+    graffiti:
+      $ref: "../keymanager-oapi.yaml#/components/schemas/Graffiti"
+    builder:
+      $ref: "#/BuilderConfig"
+
+BuilderConfig:
+  type: object
+  additionalProperties: false
+  description: |
+    Preferences for sourcing blocks from builders. `enabled` toggles the builder path for the key
+    without discarding the rest of the configuration. When `enabled` is `true` and `builders` is
+    absent or empty, the key uses the `default_config` builder list.
+
+    The optional fields of this object are per-key fallbacks: a `BuilderEntry` omitting a field of
+    the same name resolves to the value configured here.
+  properties:
+    enabled:
+      type: boolean
+      description: |
+        Whether blocks may be sourced from builders for this key. Like every other field, absent
+        means inherit: from `default_config.builder.enabled`, then the client default.
+      example: true
+    builders:
+      type: array
+      description: The builders this key requests bids from.
+      items:
+        $ref: "#/BuilderEntry"
+    max_execution_payment:
+      allOf:
+        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
+        - description: |
+            Fallback maximum trusted execution payment, in Gwei, accepted from builders whose entry
+            does not set its own. Bids promising a trusted payment above this value are rejected.
+          example: "1000000000"
+    min_bid:
+      allOf:
+        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
+        - description: |
+            Fallback minimum bid, in Gwei, accepted from builders whose entry does not set its own.
+            Bids with a value lower than this amount are rejected.
+          example: "10000000"
+    builder_boost_factor:
+      allOf:
+        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
+        - description: |
+            Fallback percentage multiplier applied to the bid value of builders whose entry does not
+            set its own, when choosing between a builder bid and a payload from the paired execution
+            node. See `BuilderEntry.builder_boost_factor` for the normative selection rule and the
+            reserved values (`0`, `100`, `2**64 - 1`).
+          example: "100"
+    proxy:
+      type: string
+      format: uri
+      description: |
+        Fallback proxy for builders whose entry does not set its own. Overrides where builder HTTP
+        requests are sent; the builder `url` remains the signed identity. See `BuilderEntry.proxy`.
+      example: "http://side-car:9001"
+
+BuilderEntry:
+  type: object
+  additionalProperties: false
+  description: |
+    One builder this key may source blocks from. `url` is the signed identity: request
+    authentications are signed over it, regardless of where the request is transported.
+  required: [url]
+  properties:
+    url:
+      type: string
+      format: uri
+      description: |
+        The builder's canonical URL, uniquely identifying it. Request authentications are signed
+        over this URL, so it MUST be the builder's own endpoint, not an intermediary's.
+      example: "https://builder.example.com"
+    pubkey:
+      allOf:
+        - $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+        - description: |
+            The builder's BLS public key. When set, binds trusted execution payments to this
+            builder's on-chain key: bids not signed by it MUST NOT be accepted. _48-bytes, hex
+            encoded with 0x prefix, case insensitive._
+    proxy:
+      type: string
+      format: uri
+      description: |
+        Overrides where this builder's HTTP requests are sent. The `url` remains the signed identity:
+        the proxy extracts the intended builder from the signed request authentication and forwards
+        the request, and cannot re-target it without invalidating the signature.
+      example: "http://side-car:9001"
+    max_execution_payment:
+      allOf:
+        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
+        - description: |
+            The maximum trusted execution payment, in Gwei, accepted from this builder. Bids
+            promising a trusted payment above this value MUST NOT be accepted. The remainder of a
+            builder's payment is expected in the trustless (in-protocol) form.
+          example: "250000000"
+    min_bid:
+      allOf:
+        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
+        - description: |
+            The minimum bid, in Gwei, that the validator will accept from this builder. Bids with a
+            value lower than this amount MUST NOT be accepted.
+          example: "10000000"
+    builder_boost_factor:
+      allOf:
+        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
+        - description: |
+            Percentage multiplier to apply to this builder's bid value when choosing between a
+            builder bid and payload from the paired execution node. This value is only relevant
+            if the beacon node has a viable `ExecutionPayloadBid` available from this builder and
+            receives a valid response from the paired execution node. When these preconditions
+            are met, the block producer MUST act as follows:
+
+            * if `exec_node_payload_value >= builder_boost_factor * (builder_payload_value // 100)`
+              for the highest builder bid known (each bid boosted by the factor applicable to the
+              builder it originates from), then commit to the local execution node payload.
+            * otherwise, commit to the builder bid.
+
+            The following values encode common preferences and MUST be supported:
+
+            * `builder_boost_factor=0`: prefer the local execution node payload unless an error
+              makes it unviable.
+            * `builder_boost_factor=100`: profit maximization mode; choose whichever payload pays
+              more.
+            * `builder_boost_factor=2**64 - 1`: prefer this builder's bid unless an error or
+              health check makes it unviable.
+
+            Implementations should use saturating arithmetic or another technique to ensure that
+            large values of the `builder_boost_factor` do not trigger overflows or errors.
+          example: "100"

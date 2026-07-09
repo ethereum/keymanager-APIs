@@ -18,7 +18,7 @@ info:
     of at least 256 bits. If such a parameter is not given, the client SHOULD generate such a token and write it to a file, to be reused
     across multiple restarts of the binary. If such a parameter is given, but the file or token cannot be read, the client SHOULD treat this
     as an error: either abort the startup, or show the error and continue without exposing the key manager routes.
-  version: "Dev"
+  version: "2.0.0-dev"
   contact:
     name: Ethereum Github
     url: https://github.com/ethereum/keymanager-APIs/issues
@@ -34,12 +34,17 @@ servers:
         default: "http://localhost/"
 
 tags:
+  - name: Validator Config
+    description: |
+      Management of a validator's full block-production preferences (fee recipient, gas limit,
+      graffiti, builders) as one atomic per-key document. Supersedes the Fee Recipient, Gas Limit
+      and Graffiti endpoints.
   - name: Fee Recipient
-    description: Set of endpoints for management of fee recipient.
+    description: Set of endpoints for management of fee recipient. Deprecated, superseded by Validator Config.
   - name: Gas Limit
-    description: Set of endpoints for management of gas limits.
+    description: Set of endpoints for management of gas limits. Deprecated, superseded by Validator Config.
   - name: Graffiti
-    description: Set of endpoints for management of graffiti.
+    description: Set of endpoints for management of graffiti. Deprecated, superseded by Validator Config.
   - name: Local Key Manager
     description: Set of endpoints for key management of local keys.
   - name: Remote Key Manager
@@ -52,6 +57,8 @@ paths:
     $ref:  './apis/local_keystores.yaml'
   /eth/v1/remotekeys:
     $ref:  './apis/remote_keystores.yaml'
+  /eth/v1/validator/config:
+    $ref:  './apis/validator_config.yaml'
   /eth/v1/validator/{pubkey}/feerecipient:
     $ref:  './apis/fee_recipient.yaml'
   /eth/v1/validator/{pubkey}/gas_limit:
@@ -83,6 +90,12 @@ components:
       $ref: './types/graffiti.yaml'
     Uint64:
       $ref: './types/uint.yaml#/Uint64'
+    ValidatorConfig:
+      $ref: './types/validator_config.yaml#/ValidatorConfig'
+    BuilderConfig:
+      $ref: './types/validator_config.yaml#/BuilderConfig'
+    BuilderEntry:
+      $ref: './types/validator_config.yaml#/BuilderEntry'
     SignerDefinition:
       $ref: './types/signer_definition.yaml'
     ImportRemoteSignerDefinition:

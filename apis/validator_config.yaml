@@ -1,0 +1,201 @@
+get:
+  operationId: getValidatorConfig
+  summary: Get Validator Config.
+  description: |
+    Returns the configured block-production preferences of the requested keys (or of all keys known
+    to the server when `pubkeys` is not given), together with the configured `default_config`.
+
+    The returned per-key documents are the CONFIGURED fragments: fields that were never explicitly
+    set for a key are absent, not resolved. This lets management tooling distinguish an explicit
+    per-key value from an inherited default. Clients can compute the effective preferences of a key
+    locally by resolving absent fields against `default_config` in the normative order defined on
+    the `ValidatorConfig` schema.
+  security:
+    - bearerAuth: []
+  tags:
+    - Validator Config
+  parameters:
+    - in: query
+      name: pubkeys
+      required: false
+      description: Restrict the response to the given public keys. Unknown keys are omitted from the response.
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+  responses:
+    "200":
+      description: Success response
+      content:
+        application/json:
+          schema:
+            title: GetValidatorConfigResponse
+            type: object
+            required: [data]
+            properties:
+              data:
+                type: object
+                required: [configs]
+                properties:
+                  default_config:
+                    allOf:
+                      - $ref: "../keymanager-oapi.yaml#/components/schemas/ValidatorConfig"
+                      - description: |
+                          The configured defaults that per-key documents fall back to. Read-only
+                          through this API. Absent when the server has no configured defaults.
+                  configs:
+                    type: object
+                    description: |
+                      Mapping of validator public key (hex encoded with 0x prefix) to its configured
+                      `ValidatorConfig` fragment. Keys with no per-key configuration map to an empty
+                      object.
+                    additionalProperties:
+                      $ref: "../keymanager-oapi.yaml#/components/schemas/ValidatorConfig"
+          example:
+            data:
+              default_config:
+                fee_recipient: "0x8943545177806ED17B9F23F0a21ee5948eCaa776"
+                gas_limit: "30000000"
+                graffiti: "example graffiti"
+                builder:
+                  enabled: true
+                  builders:
+                    - url: "https://builder-a.example.com"
+                    - url: "https://builder-b.example.com"
+                  max_execution_payment: "1000000000"
+              configs:
+                "0xa057816155ad77931185101128655c0191bd0214c201ca48ed887f6c4c6adf334070efcd75140eada5ac83a92506dd7a":
+                  fee_recipient: "0x50155530FCE8a85ec7055A5F8b2bE214B3DaeFd3"
+                  gas_limit: "45000000"
+                  builder:
+                    enabled: true
+                    builders:
+                      - url: "https://builder-a.example.com"
+                        pubkey: "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                        proxy: "http://side-car:9001"
+                        max_execution_payment: "250000000"
+                        min_bid: "10000000"
+                        builder_boost_factor: "100"
+                    max_execution_payment: "500000000"
+                "0xa99a76ed7796f7be22d5b7e85deeb7c5677e88e511e0b337618f8c4eb61349b4bf2d153f649f7b53359fe8b94a38e44c":
+                  builder:
+                    enabled: false
+    "400":
+      $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
+    "401":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
+    "403":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Forbidden"
+    "500":
+      $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
+
+post:
+  operationId: setValidatorConfig
+  summary: Set Validator Config.
+  description: |
+    Sets the block-production preferences of one or more keys. For each key in `request.configs`,
+    the submitted document REPLACES the key's entire configured fragment: the server MUST NOT merge
+    it with previously configured values. A field absent from the submitted document is unset and
+    inherits from `default_config` per the normative resolution order. Submitting an empty document
+    (`{}`) therefore clears a key's configuration entirely, returning it to pure default behavior;
+    there is no separate delete operation.
+
+    Keys NOT present in `request.configs` are left untouched: only submitted keys are affected, so
+    a large key set may be split across multiple requests. Servers SHOULD accept request bodies
+    large enough to cover their full key set in one request (thousand-key batches are expected).
+
+    Atomicity is per key, NOT per batch: each key's document takes effect fully or not at all, but
+    the batch is not transactional across keys. Keys that validate successfully are applied even
+    when other keys in the same request fail, and each key's outcome is reported in the per-key
+    response status.
+
+    Servers MUST validate the syntax of every submitted field (types, formats, patterns) and MUST
+    reject unrecognized fields. An unrecognized or invalid field inside a key's document fails that
+    key with a per-key `error` status; an unrecognized field in the request envelope fails the
+    request with a `400` response. In particular, `default_config` cannot be written through this
+    API.
+  security:
+    - bearerAuth: []
+  tags:
+    - Validator Config
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          title: SetValidatorConfigRequest
+          type: object
+          required: [configs]
+          additionalProperties: false
+          properties:
+            configs:
+              type: object
+              description: |
+                Mapping of validator public key (hex encoded with 0x prefix) to the full
+                `ValidatorConfig` document to set for that key.
+              additionalProperties:
+                $ref: "../keymanager-oapi.yaml#/components/schemas/ValidatorConfig"
+        example:
+          configs:
+            "0xa057816155ad77931185101128655c0191bd0214c201ca48ed887f6c4c6adf334070efcd75140eada5ac83a92506dd7a":
+              fee_recipient: "0x50155530FCE8a85ec7055A5F8b2bE214B3DaeFd3"
+              builder:
+                enabled: true
+                builders:
+                  - url: "https://builder-a.example.com"
+                    max_execution_payment: "250000000"
+            "0xa99a76ed7796f7be22d5b7e85deeb7c5677e88e511e0b337618f8c4eb61349b4bf2d153f649f7b53359fe8b94a38e44c":
+              builder:
+                enabled: false
+            "0xb0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7": {}
+  responses:
+    "200":
+      description: Success response
+      content:
+        application/json:
+          schema:
+            title: SetValidatorConfigResponse
+            type: object
+            required: [data]
+            properties:
+              data:
+                type: object
+                description: Status of each key in `request.configs`, keyed by the same public keys.
+                additionalProperties:
+                  type: object
+                  required: [status]
+                  properties:
+                    status:
+                      type: string
+                      description: |
+                        - set: the document was validated and applied atomically
+                        - not_found: the key is not known to the server
+                        - error: the document failed validation or could not be applied; no change
+                          was made for this key
+                      enum:
+                        - set
+                        - not_found
+                        - error
+                      example: set
+                    message:
+                      type: string
+                      description: error message if status == error
+          example:
+            data:
+              "0xa057816155ad77931185101128655c0191bd0214c201ca48ed887f6c4c6adf334070efcd75140eada5ac83a92506dd7a":
+                status: set
+              "0xa99a76ed7796f7be22d5b7e85deeb7c5677e88e511e0b337618f8c4eb61349b4bf2d153f649f7b53359fe8b94a38e44c":
+                status: error
+                message: "builder.builders[0].url is not a valid URL"
+              "0xb0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7":
+                status: set
+    "400":
+      $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
+    "401":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
+    "403":
+      $ref: "../keymanager-oapi.yaml#/components/responses/Forbidden"
+    "500":
+      $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"

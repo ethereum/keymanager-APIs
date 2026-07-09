@@ -1,7 +1,10 @@
 get:
   operationId: getGraffiti
+  deprecated: true
   summary: Get Graffiti
   description: |
+    **DEPRECATED**: superseded by the Validator Config endpoint (`/eth/v1/validator/config`), which manages the graffiti together with the rest of a validator's block-production preferences as one atomic per-key document. This endpoint will be removed in a future release.
+
     Get the graffiti for an individual validator. If no graffiti is set
     explicitly, returns the process-wide default.
   security:
@@ -45,8 +48,11 @@ get:
 
 post:
   operationId: setGraffiti
+  deprecated: true
   summary: Set Graffiti
   description: |
+    **DEPRECATED**: superseded by the Validator Config endpoint (`/eth/v1/validator/config`), which manages the graffiti together with the rest of a validator's block-production preferences as one atomic per-key document. This endpoint will be removed in a future release.
+
     Set the graffiti for an individual validator.
   security:
     - bearerAuth: []
@@ -85,8 +91,11 @@ post:
 
 delete:
   operationId: deleteGraffiti
+  deprecated: true
   summary: Delete Configured Graffiti
   description: |
+    **DEPRECATED**: superseded by the Validator Config endpoint (`/eth/v1/validator/config`), which manages the graffiti together with the rest of a validator's block-production preferences as one atomic per-key document. This endpoint will be removed in a future release.
+
     Delete the configured graffiti for the specified public key.
   security:
     - bearerAuth: []

@@ -1,7 +1,10 @@
 get:
   operationId: listFeeRecipient
+  deprecated: true
   summary: List Fee Recipient.
   description: |
+    **DEPRECATED**: superseded by the Validator Config endpoint (`/eth/v1/validator/config`), which manages the fee recipient together with the rest of a validator's block-production preferences as one atomic per-key document. This endpoint will be removed in a future release.
+
     List the validator public key to eth address mapping for fee recipient feature on a specific public key.
     The validator public key will return with the default fee recipient address if a specific one was not found.
 
@@ -41,8 +44,11 @@ get:
 
 post:
   operationId: setFeeRecipient
+  deprecated: true
   summary: Set Fee Recipient.
   description: |
+    **DEPRECATED**: superseded by the Validator Config endpoint (`/eth/v1/validator/config`), which manages the fee recipient together with the rest of a validator's block-production preferences as one atomic per-key document. This endpoint will be removed in a future release.
+
     Sets the validator client fee recipient mapping which will then update the beacon node.
     Existing mappings for the same validator public key will be overwritten.
     Specific Public keys not mapped will continue to use the default address for fee recipient in accordance to the startup of the validator client and beacon node.
@@ -85,8 +91,12 @@ post:
       $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
 delete:
   operationId: deleteFeeRecipient
+  deprecated: true
   summary: Delete Configured Fee Recipient
-  description: Delete a configured fee recipient mapping for the specified public key.
+  description: |
+    **DEPRECATED**: superseded by the Validator Config endpoint (`/eth/v1/validator/config`), which manages the fee recipient together with the rest of a validator's block-production preferences as one atomic per-key document. This endpoint will be removed in a future release.
+
+    Delete a configured fee recipient mapping for the specified public key.
   security:
     - bearerAuth: [ ]
   tags:

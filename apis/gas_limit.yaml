@@ -1,7 +1,10 @@
 get:
   operationId: getGasLimit
+  deprecated: true
   summary: Get Gas Limit.
   description: |
+    **DEPRECATED**: superseded by the Validator Config endpoint (`/eth/v1/validator/config`), which manages the gas limit together with the rest of a validator's block-production preferences as one atomic per-key document. This endpoint will be removed in a future release.
+
     Get the execution gas limit for an individual validator. This gas limit is the one used by the
     validator when proposing blocks via an external builder. If no limit has been set explicitly for
     a key then the process-wide default will be returned.
@@ -44,8 +47,11 @@ get:
 
 post:
   operationId: setGasLimit
+  deprecated: true
   summary: Set Gas Limit.
   description: |
+    **DEPRECATED**: superseded by the Validator Config endpoint (`/eth/v1/validator/config`), which manages the gas limit together with the rest of a validator's block-production preferences as one atomic per-key document. This endpoint will be removed in a future release.
+
     Set the gas limit for an individual validator. This limit will be propagated to the beacon
     node for use on future block proposals. The beacon node is responsible for informing external
     block builders of the change.
@@ -88,8 +94,11 @@ post:
       $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
 delete:
   operationId: deleteGasLimit
+  deprecated: true
   summary: Delete Configured Gas Limit
   description: |
+    **DEPRECATED**: superseded by the Validator Config endpoint (`/eth/v1/validator/config`), which manages the gas limit together with the rest of a validator's block-production preferences as one atomic per-key document. This endpoint will be removed in a future release.
+
     Delete a configured gas limit for the specified public key.
 
     The server may return a 400 status code if no external builder is configured.
