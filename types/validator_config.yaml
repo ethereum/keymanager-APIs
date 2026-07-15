@@ -75,25 +75,32 @@ BuilderConfig:
       type: string
       format: uri
       description: |
-        Fallback proxy for builders whose entry does not set its own. Overrides where builder HTTP
-        requests are sent; the builder `url` remains the signed identity. See `BuilderEntry.proxy`.
+        Fallback proxy for builders whose entry does not set its own. See `BuilderEntry.proxy`.
       example: "http://side-car:9001"
 
 BuilderEntry:
   type: object
   additionalProperties: false
   description: |
-    One builder this key may source blocks from. `url` is the signed identity: request
-    authentications are signed over it, regardless of where the request is transported.
+    One builder this key may source blocks from.
   required: [url]
   properties:
     url:
       type: string
       format: uri
       description: |
-        The builder's canonical URL, uniquely identifying it. Request authentications are signed
-        over this URL, so it MUST be the builder's own endpoint, not an intermediary's.
+        The builder's URL, uniquely identifying it. Requests are sent here unless `proxy` is set.
       example: "https://builder.example.com"
+    auth_data:
+      type: string
+      pattern: "^0x[a-fA-F0-9]{0,8192}$"
+      description: |
+        Opaque data used to authenticate this validator's requests to the builder. Agreed with the
+        builder out of band and placed verbatim in the `RequestAuthV1.data` the validator signs. The
+        builder checks the signature and the exact bytes. Its meaning is left to the two parties (for
+        example, a shared secret). If unset, no authentication is sent to this builder. At most
+        `MAX_DATA_SIZE` (4096) bytes.
+      example: "0x1234567890abcdef"
     pubkey:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
@@ -105,9 +112,8 @@ BuilderEntry:
       type: string
       format: uri
       description: |
-        Overrides where this builder's HTTP requests are sent. The `url` remains the signed identity:
-        the proxy extracts the intended builder from the signed request authentication and forwards
-        the request, and cannot re-target it without invalidating the signature.
+        Optional proxy that routes this builder's requests. When set, requests are sent here instead
+        of directly to `url`.
       example: "http://side-car:9001"
     max_execution_payment:
       allOf:
