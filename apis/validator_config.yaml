@@ -107,15 +107,19 @@ post:
     a large key set may be split across multiple requests. Servers SHOULD accept request bodies
     large enough to cover their full key set in one request (thousand-key batches are expected).
 
+    A configuration may be set for a key the server does not yet manage. The server SHOULD store it
+    (pre-provisioning) so it takes effect when the key is later added; a server that does not
+    pre-provision returns `not_found`.
+
     Atomicity is per key, NOT per batch: each key's document takes effect fully or not at all, but
     the batch is not transactional across keys. Keys that validate successfully are applied even
     when other keys in the same request fail, and each key's outcome is reported in the per-key
     response status.
 
-    Servers MUST validate the syntax of every submitted field (types, formats, patterns) and MUST
-    reject unrecognized fields. An unrecognized or invalid field inside a key's document fails that
-    key with a per-key `error` status; an unrecognized field in the request envelope fails the
-    request with a `400` response. In particular, `default_config` cannot be written through this
+    Servers MUST validate the syntax of every submitted field (types, formats, patterns). An invalid
+    value for a recognized field inside a key's document fails that key with a per-key `error` status.
+    Unrecognized fields are ignored for forward compatibility, consistent with the rest of the
+    keymanager API. In particular, `default_config` is read-only and cannot be written through this
     API.
   security:
     - bearerAuth: []
@@ -129,13 +133,14 @@ post:
           title: SetValidatorConfigRequest
           type: object
           required: [configs]
-          additionalProperties: false
           properties:
             configs:
               type: object
               description: |
                 Mapping of validator public key (hex encoded with 0x prefix) to the full
-                `ValidatorConfig` document to set for that key.
+                `ValidatorConfig` document to set for that key. Keyed by public key rather than
+                validator index so configurations can be pre-provisioned for keys that are not yet
+                active
               additionalProperties:
                 $ref: "../keymanager-oapi.yaml#/components/schemas/ValidatorConfig"
         example:
@@ -171,8 +176,10 @@ post:
                     status:
                       type: string
                       description: |
-                        - set: the document was validated and applied atomically
-                        - not_found: the key is not known to the server
+                        - set: the document was validated and stored (pre-provisioned if the key is
+                          not yet managed, taking effect when it is added)
+                        - not_found: the server neither manages this key nor supports
+                          pre-provisioning, so nothing was stored
                         - error: the document failed validation or could not be applied; no change
                           was made for this key
                       enum:

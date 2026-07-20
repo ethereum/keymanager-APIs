@@ -1,17 +1,25 @@
 ValidatorConfig:
   type: object
-  additionalProperties: false
   description: |
     The full set of block-production preferences for a single validator public key, managed as one
     atomic document. Every field is optional: an absent field inherits its value from the
     `default_config`, and where the default is also absent, from the client's built-in behavior.
 
-    Field resolution order (normative). For key-level fields (`fee_recipient`, `target_gas_limit`,
-    `graffiti`, and the fields of `builder` itself): the key's document, then `default_config`,
-    then the client default. For per-builder fields (`max_execution_payment`, `min_bid`,
-    `builder_boost_factor`, `proxy`): the `BuilderEntry`, then the enclosing `BuilderConfig`
-    fallback of the same name, then the same two levels within `default_config`, then the client
-    default.
+    Field resolution order (normative). The validator client resolves each field to its effective
+    value by walking this order, and management tooling computes the same effective value from the
+    fragments returned by GET:
+
+    - Key-level fields (`fee_recipient`, `target_gas_limit`, `graffiti`, and the fields of `builder`
+      itself): key document → `default_config` → client default.
+    - Per-builder fields (`max_execution_payment`, `min_bid`, `builder_boost_factor`, `proxy`):
+      `BuilderEntry` → enclosing `BuilderConfig` → `default_config.builder` → client default.
+
+    Builder entries are not matched between a key and `default_config`.
+
+    Example. If `default_config.builder` is `{ enabled: false, builders: [X], max_execution_payment:
+    1G }` and a key sets only `builder: { enabled: true }`, the key's effective builder config is
+    `{ enabled: true, builders: [X], max_execution_payment: 1G }`: only `enabled` is overridden, and
+    `builders` and `max_execution_payment` fall through to `default_config`.
   properties:
     fee_recipient:
       $ref: "../keymanager-oapi.yaml#/components/schemas/EthAddress"
@@ -28,7 +36,6 @@ ValidatorConfig:
 
 BuilderConfig:
   type: object
-  additionalProperties: false
   description: |
     Preferences for sourcing blocks from builders. `enabled` toggles the builder path for the key
     without discarding the rest of the configuration. When `enabled` is `true` and `builders` is
@@ -80,7 +87,6 @@ BuilderConfig:
 
 BuilderEntry:
   type: object
-  additionalProperties: false
   description: |
     One builder this key may source blocks from.
   required: [url]
