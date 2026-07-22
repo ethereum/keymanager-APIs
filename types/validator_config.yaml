@@ -1,25 +1,13 @@
 ValidatorConfig:
   type: object
   description: |
-    The full set of block-production preferences for a single validator public key, managed as one
-    atomic document. Every field is optional: an absent field inherits its value from the
-    `default_config`, and where the default is also absent, from the client's built-in behavior.
-
-    Field resolution order (normative). The validator client resolves each field to its effective
-    value by walking this order, and management tooling computes the same effective value from the
-    fragments returned by GET:
-
-    - Key-level fields (`fee_recipient`, `target_gas_limit`, `graffiti`, and the fields of `builder`
-      itself): key document → `default_config` → client default.
-    - Per-builder fields (`max_execution_payment`, `min_bid`, `builder_boost_factor`, `proxy`):
-      `BuilderEntry` → enclosing `BuilderConfig` → `default_config.builder` → client default.
-
-    Builder entries are not matched between a key and `default_config`.
-
-    Example. If `default_config.builder` is `{ enabled: false, builders: [X], max_execution_payment:
-    1G }` and a key sets only `builder: { enabled: true }`, the key's effective builder config is
-    `{ enabled: true, builders: [X], max_execution_payment: 1G }`: only `enabled` is overridden, and
-    `builders` and `max_execution_payment` fall through to `default_config`.
+    All block-production preferences for one validator key, managed as a single document. A
+    document is all-or-nothing: it contains every field (`fee_recipient`, `target_gas_limit`,
+    `graffiti`, and `builder`, with each builder entry fully resolved), and the validator client
+    uses it exactly as submitted. A key without a document follows the client's defaults
+    (surfaced read-only as `default_config` on GET). Nothing is inherited or merged per field:
+    for a configured key the defaults play no role, so its document applies in full even where it
+    differs from them (for example, `builder.enabled: true` while the default is `false`).
   properties:
     fee_recipient:
       $ref: "../keymanager-oapi.yaml#/components/schemas/EthAddress"
@@ -37,76 +25,62 @@ ValidatorConfig:
 BuilderConfig:
   type: object
   description: |
-    Preferences for sourcing blocks from builders. `enabled` toggles the builder path for the key
-    without discarding the rest of the configuration. When `enabled` is `true` and `builders` is
-    absent or empty, the key uses the `default_config` builder list.
+    Preferences for sourcing blocks from builders. `enabled` switches the builder path on or off
+    for the key; a document may carry a `builders` list while `enabled` is `false`. `enabled` is
+    required; `builders` may be absent or empty, in which case no builders are solicited.
 
-    The optional fields of this object are per-key fallbacks: a `BuilderEntry` omitting a field of
-    the same name resolves to the value configured here.
+    Builder entries are submitted fully resolved: this API is called programmatically, and the
+    caller sets every preference an entry carries on the entry itself. There are no per-builder
+    fallback fields; every entry field except `pubkey` is required.
+  required: [enabled]
   properties:
     enabled:
       type: boolean
       description: |
-        Whether blocks may be sourced from builders for this key. Like every other field, absent
-        means inherit: from `default_config.builder.enabled`, then the client default.
+        Whether blocks may be sourced from builders for this key.
       example: true
     builders:
       type: array
-      description: The builders this key requests bids from.
+      description: |
+        The builders this key requests bids from.
+
+        Entries are identified by their (`url`, `auth_data`) pair: `url` compared as the exact
+        string, `auth_data` as its decoded bytes (hex case does not distinguish entries). One
+        list MUST NOT contain two entries with the same `url` and the same `auth_data`. Multiple
+        entries MAY share a `url`, each with different `auth_data`. Requests are made per entry,
+        so entries sharing a `url` result in one request to that `url` for each such entry.
       items:
         $ref: "#/BuilderEntry"
-    max_execution_payment:
-      allOf:
-        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
-        - description: |
-            Fallback maximum trusted execution payment, in Gwei, accepted from builders whose entry
-            does not set its own. Bids promising a trusted payment above this value are rejected.
-          example: "1000000000"
-    min_bid:
-      allOf:
-        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
-        - description: |
-            Fallback minimum bid, in Gwei, accepted from builders whose entry does not set its own.
-            Bids with a value lower than this amount are rejected.
-          example: "10000000"
-    builder_boost_factor:
-      allOf:
-        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
-        - description: |
-            Fallback percentage multiplier applied to the bid value of builders whose entry does not
-            set its own, when choosing between a builder bid and a payload from the paired execution
-            node. See `BuilderEntry.builder_boost_factor` for the normative selection rule and the
-            reserved values (`0`, `100`, `2**64 - 1`).
-          example: "100"
-    proxy:
-      type: string
-      format: uri
-      description: |
-        Fallback proxy for builders whose entry does not set its own. See `BuilderEntry.proxy`.
-      example: "http://side-car:9001"
 
 BuilderEntry:
   type: object
   description: |
     One builder this key may source blocks from.
-  required: [url]
+  required: [url, auth_data, max_execution_payment, min_bid, builder_boost_factor]
   properties:
     url:
       type: string
       format: uri
       description: |
-        The builder's URL, uniquely identifying it. Requests are sent here unless `proxy` is set.
+        The URL this entry's requests are sent to. Multiple entries MAY share a `url`; entries are
+        identified by their (`url`, `auth_data`) pair (see `builders`).
       example: "https://builder.example.com"
     auth_data:
       type: string
-      pattern: "^0x[a-fA-F0-9]{0,8192}$"
+      pattern: "^0x(?:[a-fA-F0-9]{2}){0,4096}$"
       description: |
         Opaque data used to authenticate this validator's requests to the builder. Agreed with the
         builder out of band and placed verbatim in the `RequestAuthV1.data` the validator signs. The
-        builder checks the signature and the exact bytes. Its meaning is left to the two parties (for
-        example, a shared secret). If unset, no authentication is sent to this builder. At most
-        `MAX_DATA_SIZE` (4096) bytes.
-      example: "0x1234567890abcdef"
+        builder checks the signature and the exact bytes. Its meaning is left to the two parties
+        (for example, a shared secret). At most `MAX_DATA_SIZE` (4096) bytes.
+
+        The keymanager treats this value as opaque bytes: it only ever compares `auth_data` values
+        for equality, and never parses or inspects them. When no value has been agreed with the
+        builder out of band, the caller SHOULD set `auth_data` to the UTF-8 bytes of the builder's
+        own advertised URL, exactly as advertised, hex encoded: it is deterministic, distinct per
+        builder, and requires no coordination between the signers of a distributed validator. That
+        is purely a convention about what tooling writes into the field.
+      example: "0x68747470733a2f2f6275696c6465722e6578616d706c652e636f6d"
     pubkey:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
@@ -114,13 +88,6 @@ BuilderEntry:
             The builder's BLS public key. When set, binds trusted execution payments to this
             builder's on-chain key: bids not signed by it MUST NOT be accepted. _48-bytes, hex
             encoded with 0x prefix, case insensitive._
-    proxy:
-      type: string
-      format: uri
-      description: |
-        Optional proxy that routes this builder's requests. When set, requests are sent here instead
-        of directly to `url`.
-      example: "http://side-car:9001"
     max_execution_payment:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
