@@ -82,12 +82,12 @@ BuilderEntry:
         is purely a convention about what tooling writes into the field.
       example: "0x68747470733a2f2f6275696c6465722e6578616d706c652e636f6d"
     pubkey:
+      description: |
+        The builder's BLS public key. When set, binds trusted execution payments to this
+        builder's on-chain key: bids not signed by it MUST NOT be accepted. _48-bytes, hex
+        encoded with 0x prefix, case insensitive._
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
-        - description: |
-            The builder's BLS public key. When set, binds trusted execution payments to this
-            builder's on-chain key: bids not signed by it MUST NOT be accepted. _48-bytes, hex
-            encoded with 0x prefix, case insensitive._
     max_execution_payment:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
@@ -100,18 +100,22 @@ BuilderEntry:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
         - description: |
-            The minimum bid, in Gwei, that the validator will accept from this builder. Bids with a
-            value lower than this amount MUST NOT be accepted.
+            The minimum total payment, in Gwei, that the validator will accept from this builder.
+            A bid whose `value` plus `execution_payment` is below this amount MUST NOT be
+            accepted.
           example: "10000000"
     builder_boost_factor:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
         - description: |
-            Percentage multiplier to apply to this builder's bid value when choosing between a
-            builder bid and payload from the paired execution node. This value is only relevant
-            if the beacon node has a viable `ExecutionPayloadBid` available from this builder and
-            receives a valid response from the paired execution node. When these preconditions
-            are met, the block producer MUST act as follows:
+            Percentage multiplier to apply to this builder's bid when choosing between a builder
+            bid and payload from the paired execution node. `builder_payload_value` is the bid's
+            total payment to the proposer, its `value` plus its `execution_payment`, and the
+            factor applies only to bids that passed the `max_execution_payment` and `min_bid`
+            checks. This value is only relevant if the beacon node has a viable
+            `ExecutionPayloadBid` available from this builder and receives a valid response from
+            the paired execution node. When these preconditions are met, the block producer MUST
+            act as follows:
 
             * if `exec_node_payload_value >= builder_boost_factor * (builder_payload_value // 100)`
               for the highest builder bid known (each bid boosted by the factor applicable to the
