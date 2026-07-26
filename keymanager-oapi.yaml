@@ -34,6 +34,8 @@ servers:
         default: "http://localhost/"
 
 tags:
+  - name: Builders
+    description: Set of endpoints for management of per-key builders.
   - name: Fee Recipient
     description: Set of endpoints for management of fee recipient.
   - name: Gas Limit
@@ -52,6 +54,8 @@ paths:
     $ref:  './apis/local_keystores.yaml'
   /eth/v1/remotekeys:
     $ref:  './apis/remote_keystores.yaml'
+  /eth/v1/validator/{pubkey}/builders:
+    $ref:  './apis/validator_builders.yaml'
   /eth/v1/validator/{pubkey}/feerecipient:
     $ref:  './apis/fee_recipient.yaml'
   /eth/v1/validator/{pubkey}/gas_limit:
@@ -75,6 +79,8 @@ components:
       $ref: './types/eth_address.yaml'
     Keystore:
       $ref: './types/keystore.yaml'
+    BuilderEntry:
+      $ref: './types/builder_entry.yaml#/BuilderEntry'
     FeeRecipient:
       $ref: './types/fee_recipient.yaml'
     GasLimit:
