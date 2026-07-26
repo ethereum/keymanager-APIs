@@ -2,8 +2,9 @@ get:
   operationId: getBuilders
   summary: Get Builders
   description: |
-    List the builders configured for an individual validator key. A key with no builder
-    configuration returns an empty list, and follows the validator client's own configuration.
+    Get the builder configuration in effect for an individual validator key. A key with no
+    configuration of its own returns the validator client's, in accordance with the startup of the
+    validator client.
   security:
     - bearerAuth: []
   tags:
@@ -20,18 +21,18 @@ get:
       content:
         application/json:
           schema:
-            title: ListBuildersResponse
+            title: GetBuildersResponse
             type: object
             required: [data]
             properties:
               data:
-                type: array
-                items:
-                  $ref: "../keymanager-oapi.yaml#/components/schemas/BuilderEntry"
+                $ref: "../keymanager-oapi.yaml#/components/schemas/BuilderConfig"
           examples:
             Builders:
               value:
                 data:
+                  enabled: true
+                  builders:
                   - url: "https://builder-a.example.com"
                     auth_data: "0x68747470733a2f2f6275696c6465722d612e6578616d706c652e636f6d"
                     max_execution_payment: "0"
@@ -58,15 +59,15 @@ post:
   operationId: setBuilders
   summary: Set Builders
   description: |
-    Set the builders for an individual validator key. The submitted list replaces the key's stored
-    list in full; the server MUST NOT merge it with previously stored entries.
+    Set the builder configuration for an individual validator key. The submission replaces the
+    key's stored configuration in full; the server MUST NOT merge it with what was stored before.
 
-    The list MUST contain at least one entry, and MUST NOT contain two entries with the same `url`
-    and the same `auth_data`. The server MUST reject either with a 400 rather than storing a partial
-    list or silently dropping an entry.
+    When present, `builders` MUST contain at least one entry, and MUST NOT contain two entries with
+    the same `url` and the same `auth_data`. The server MUST reject either with a 400 rather than
+    storing a partial list or silently dropping an entry.
 
-    Because at least one entry is required, `POST` can narrow a key's builders but cannot remove the
-    configuration; use `DELETE` for that.
+    `POST` always leaves the key configured; use `DELETE` to remove the configuration so the key
+    follows the validator client again.
   security:
     - bearerAuth: []
   tags:
@@ -82,19 +83,11 @@ post:
     content:
       application/json:
         schema:
-          title: SetBuildersRequest
-          type: object
-          required: [builders]
-          properties:
-            builders:
-              type: array
-              minItems: 1
-              maxItems: 64  # MAX_BUILDER_ENTRIES
-              items:
-                $ref: "../keymanager-oapi.yaml#/components/schemas/BuilderEntry"
+          $ref: "../keymanager-oapi.yaml#/components/schemas/BuilderConfig"
         examples:
           Builders:
             value:
+              enabled: true
               builders:
                 - url: "https://builder-a.example.com"
                   auth_data: "0x68747470733a2f2f6275696c6465722d612e6578616d706c652e636f6d"
@@ -123,7 +116,9 @@ delete:
     own configuration, in accordance with the startup of the validator client, exactly as a key that
     was never configured does.
 
-    To stop using one builder while keeping the others, `POST` the remaining entries instead.
+    This is not the same as `enabled: false`, which keeps a configuration saying this key sources no
+    builder bids at all. To stop using one builder while keeping the others, `POST` the remaining
+    entries instead.
   security:
     - bearerAuth: []
   tags:

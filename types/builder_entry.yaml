@@ -1,3 +1,32 @@
+BuilderConfig:
+  type: object
+  description: |
+    How a validator key sources blocks from builders.
+
+    `enabled: false` stops this key sourcing builder bids at all, including from any builders the
+    validator client is configured with globally. This is how a single key opts out of an otherwise
+    global builder setup, and it is distinct from having no configuration, which follows the
+    validator client in full.
+
+    When `enabled` is `true`, `builders` names the builders to use. Omit it to use whichever
+    builders the validator client is configured with.
+  required: [enabled]
+  properties:
+    enabled:
+      type: boolean
+      description: |
+        Whether blocks may be sourced from builders for this key.
+      example: true
+    builders:
+      type: array
+      minItems: 1
+      maxItems: 64  # MAX_BUILDER_ENTRIES
+      description: |
+        The builders this key sources bids from, replacing any the validator client is configured
+        with. Omit the field rather than sending an empty array.
+      items:
+        $ref: "../keymanager-oapi.yaml#/components/schemas/BuilderEntry"
+
 BuilderEntry:
   type: object
   description: |

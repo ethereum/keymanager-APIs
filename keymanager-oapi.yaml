@@ -79,6 +79,8 @@ components:
       $ref: './types/eth_address.yaml'
     Keystore:
       $ref: './types/keystore.yaml'
+    BuilderConfig:
+      $ref: './types/builder_entry.yaml#/BuilderConfig'
     BuilderEntry:
       $ref: './types/builder_entry.yaml#/BuilderEntry'
     FeeRecipient:
