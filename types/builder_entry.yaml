@@ -62,7 +62,7 @@ BuilderEntry:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
         - description: |
-            Percentage multiplier weighting this builder's bid against the other candidates. Below
+            Percentage multiplier weighting this builder's bid against the local payload. Below
             `100` favours the local payload, above `100` favours this builder.
 
             Values that encode common preferences:
