@@ -57,13 +57,13 @@ BuilderEntry:
     One builder a validator key may source blocks from. At least one of `url` and `builder_pubkey`
     MUST be present.
 
-    Entries are distinguished by `url`, `auth_data` and `builder_pubkey` taken together, where an
-    absent field matches only another absent field. `url` is compared as the exact string and
-    `auth_data` as the decoded bytes, so hex case does not distinguish entries, and an omitted
-    `auth_data` is compared as the value the validator client would derive for it. Several entries
-    MAY share a `url` with different `auth_data`, and one request is made per entry, since several
-    builders may be reachable at one `url`. A `builder_pubkey` MUST NOT appear on more than one
-    entry, since two entries naming the same builder would leave its p2p bids subject to both.
+    An entry that contains a `url` is a bid request, and no two of them may share both that `url`
+    and their `auth_data`. `url` is compared as the exact string and `auth_data` as the decoded
+    bytes, so hex case does not distinguish entries, and an omitted `auth_data` is compared as the
+    value the validator client would derive for it. One request is made per entry, so several
+    entries MAY share a `url` with different `auth_data`, since several builders may be reachable
+    at one `url`. An entry with no `url` supplies p2p policy instead, and no two of them may share
+    a `builder_pubkey`.
 
     See [produceBlockV4](https://ethereum.github.io/beacon-APIs/#/Validator/produceBlockV4) for the
     selection rule.
@@ -98,9 +98,10 @@ BuilderEntry:
       example: "0x68747470733a2f2f6275696c6465722e6578616d706c652e636f6d"
     builder_pubkey:
       description: |
-        The builder's BLS public key, distinct from the validator `pubkey` in the request path. When
-        set, a builder-API bid not signed by it MUST NOT be accepted, and this entry also applies to
-        that builder's p2p bids. _48-bytes, hex encoded with 0x prefix, case insensitive._
+        The builder's BLS public key, distinct from the validator `pubkey` in the request path. On
+        an entry with a `url` it filters the response: a builder-API bid not signed by it MUST NOT
+        be accepted. On an entry without one it identifies the builder whose p2p bids this entry
+        applies to. _48-bytes, hex encoded with 0x prefix, case insensitive._
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
     max_execution_payment:
