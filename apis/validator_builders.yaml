@@ -34,8 +34,8 @@ get:
               value:
                 data:
                   enabled: true
-                  default_min_bid: "10000000"
-                  default_builder_boost_factor: "100"
+                  min_bid: "10000000"
+                  builder_boost_factor: "100"
                   builders:
                   - url: "https://builder-a.example.com"
                     auth_data: "0x68747470733a2f2f6275696c6465722d612e6578616d706c652e636f6d"
@@ -98,8 +98,8 @@ post:
           BuilderConfig:
             value:
               enabled: true
-              default_min_bid: "10000000"
-              default_builder_boost_factor: "100"
+              min_bid: "10000000"
+              builder_boost_factor: "100"
               builders:
                 - url: "https://builder-a.example.com"
                   max_execution_payment: "0"

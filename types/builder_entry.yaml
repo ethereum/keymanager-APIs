@@ -10,9 +10,9 @@ BuilderConfig:
 
     When `enabled` is `true`, `builders` selects which builders this key uses.
 
-    `default_min_bid` and `default_builder_boost_factor` are this key's defaults. An entry that
-    omits `min_bid` or `builder_boost_factor` takes the corresponding default, so one value covers
-    every builder without being repeated on each entry.
+    `BuilderConfig` carries a `min_bid` and a `builder_boost_factor` that are this key's defaults.
+    An entry that omits its own takes the default, so one value covers every builder without being
+    repeated on each entry, and the defaults also apply to bids from builders that no entry names.
 
     The validator client resolves every entry before it reaches the beacon node. An omitted
     `min_bid` or `builder_boost_factor` takes this key's default, and then the validator client's
@@ -36,19 +36,19 @@ BuilderConfig:
         source.
       items:
         $ref: "../keymanager-oapi.yaml#/components/schemas/BuilderEntry"
-    default_min_bid:
+    min_bid:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
         - description: |
-            This key's default `min_bid`, in Gwei. Applies to any entry that omits `min_bid`, and
-            to a bid from a builder no entry identifies.
+            This key's default `min_bid`, in Gwei. Applies to any entry that omits its own, and to
+            a bid from a builder no entry identifies.
           example: "10000000"
-    default_builder_boost_factor:
+    builder_boost_factor:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
         - description: |
-            This key's default `builder_boost_factor`. Applies to any entry that omits
-            `builder_boost_factor`, and to a bid from a builder no entry identifies.
+            This key's default `builder_boost_factor`. Applies to any entry that omits its own, and
+            to a bid from a builder no entry identifies.
           example: "100"
 
 BuilderEntry:
