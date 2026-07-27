@@ -35,7 +35,7 @@ servers:
 
 tags:
   - name: Builders
-    description: Set of endpoints for management of per-key builders.
+    description: Set of endpoints for management of builders.
   - name: Fee Recipient
     description: Set of endpoints for management of fee recipient.
   - name: Gas Limit

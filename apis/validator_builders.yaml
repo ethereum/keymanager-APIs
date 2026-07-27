@@ -2,9 +2,11 @@ get:
   operationId: getBuilders
   summary: Get Builders
   description: |
-    Get the builder configuration in effect for an individual validator key. A key with no
-    configuration of its own returns the validator client's, in accordance with the startup of the
-    validator client.
+    Get the builder configuration in effect for an individual validator key, with omitted values
+    resolved: an entry that omits a field is returned with the value that will be used for it, and a
+    key with no configuration of its own is returned with the validator client's. A returned
+    configuration is therefore fully resolved, so re-submitting it with `POST` fixes those values
+    rather than leaving them to follow the defaults.
   security:
     - bearerAuth: []
   tags:
@@ -28,10 +30,12 @@ get:
               data:
                 $ref: "../keymanager-oapi.yaml#/components/schemas/BuilderConfig"
           examples:
-            Builders:
+            BuilderConfig:
               value:
                 data:
                   enabled: true
+                  default_min_bid: "10000000"
+                  default_builder_boost_factor: "100"
                   builders:
                   - url: "https://builder-a.example.com"
                     auth_data: "0x68747470733a2f2f6275696c6465722d612e6578616d706c652e636f6d"
@@ -44,6 +48,10 @@ get:
                     max_execution_payment: "250000000"
                     min_bid: "10000000"
                     builder_boost_factor: "100"
+                  - builder_pubkey: "0xa057816155ad77931185101128655c0191bd0214c201ca48ed887f6c4c6adf334070efcd75140eada5ac83a92506dd7a"
+                    max_execution_payment: "0"
+                    min_bid: "20000000"
+                    builder_boost_factor: "120"
     "400":
       $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
     "401":
@@ -62,12 +70,14 @@ post:
     Set the builder configuration for an individual validator key. The submission replaces the
     key's stored configuration in full; the server MUST NOT merge it with what was stored before.
 
-    When present, `builders` MUST contain at least one entry, and MUST NOT contain two entries with
-    the same `url` and the same `auth_data`. The server MUST reject either with a 400 rather than
-    storing a partial list or silently dropping an entry.
+    Each entry MUST contain at least one of `url` and `builder_pubkey`. No two entries may share the
+    same `url`, `auth_data` and `builder_pubkey`, and no `builder_pubkey` may appear twice. The
+    server MUST reject any of these with a 400 rather than storing a partial list or silently
+    dropping an entry.
 
     `POST` always leaves the key configured; use `DELETE` to remove the configuration so the key
-    follows the validator client again.
+    follows the validator client again. An empty `builders` array is a configuration that names no
+    builders, not a removal.
   security:
     - bearerAuth: []
   tags:
@@ -85,15 +95,17 @@ post:
         schema:
           $ref: "../keymanager-oapi.yaml#/components/schemas/BuilderConfig"
         examples:
-          Builders:
+          BuilderConfig:
             value:
               enabled: true
+              default_min_bid: "10000000"
+              default_builder_boost_factor: "100"
               builders:
                 - url: "https://builder-a.example.com"
-                  auth_data: "0x68747470733a2f2f6275696c6465722d612e6578616d706c652e636f6d"
                   max_execution_payment: "0"
-                  min_bid: "0"
-                  builder_boost_factor: "100"
+                - builder_pubkey: "0xa057816155ad77931185101128655c0191bd0214c201ca48ed887f6c4c6adf334070efcd75140eada5ac83a92506dd7a"
+                  max_execution_payment: "0"
+                  builder_boost_factor: "120"
   responses:
     "202":
       description: successfully updated
@@ -131,13 +143,13 @@ delete:
         required: true
   responses:
     "204":
-      description: Successfully removed the builders, or there were no builders set for the requested public key.
+      description: Successfully removed the builder configuration, or there was none set for the requested public key.
     "400":
       $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
     "401":
       $ref: "../keymanager-oapi.yaml#/components/responses/Unauthorized"
     "403":
-      description: Builders were found, but cannot be removed. This may be because they were in configuration files that cannot be updated.
+      description: A builder configuration was found, but cannot be removed. This may be because it was in configuration files that cannot be updated.
       content:
         application/json:
           schema:
