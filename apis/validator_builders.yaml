@@ -70,10 +70,10 @@ post:
     Set the builder configuration for an individual validator key. The submission replaces the
     key's stored configuration in full; the server MUST NOT merge it with what was stored before.
 
-    Each entry MUST contain at least one of `url` and `builder_pubkey`. No two entries that contain
-    a `url` may share both that `url` and their `auth_data`, and no two entries without one may
-    share a `builder_pubkey`. The server MUST reject any of these with a 400 rather than storing a
-    partial list or silently dropping an entry.
+    Each entry in the `builders` array MUST contain at least one of `url` and `builder_pubkey`. No
+    two entries that contain a `url` may share both that `url` and their `auth_data`, and no two
+    entries without one may share a `builder_pubkey`. The server MUST reject any of these with a 400
+    rather than storing a partial list or silently dropping an entry.
 
     `POST` always leaves the key configured; use `DELETE` to remove the configuration so the key
     follows the validator client again. An empty `builders` array is a configuration that names no
@@ -130,7 +130,7 @@ delete:
 
     This is not the same as `enabled: false`, which keeps a configuration saying this key sources no
     builder bids at all. To stop using one builder while keeping the others, `POST` the remaining
-    entries instead.
+    entries of the `builders` array instead.
   security:
     - bearerAuth: []
   tags:
