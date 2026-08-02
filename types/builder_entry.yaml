@@ -26,16 +26,6 @@ BuilderConfig:
       description: |
         Whether blocks may be sourced from builders for this key.
       example: true
-    builders:
-      type: array
-      maxItems: 64  # MAX_BUILDER_ENTRIES
-      description: |
-        The builders this key sources bids from, replacing any the validator client is configured
-        with. Omit this field to use the validator client's builders instead. Send an empty array to
-        use none, so no bid is requested from any builder and p2p bids remain this key's only
-        source.
-      items:
-        $ref: "../keymanager-oapi.yaml#/components/schemas/BuilderEntry"
     min_bid:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
@@ -50,6 +40,16 @@ BuilderConfig:
             This key's default `builder_boost_factor`. Applies to any entry that omits its own, and
             to a bid from a builder no entry identifies.
           example: "100"
+    builders:
+      type: array
+      maxItems: 64  # MAX_BUILDER_ENTRIES
+      description: |
+        The builders this key sources bids from, replacing any the validator client is configured
+        with. Omit this field to use the validator client's builders instead. Send an empty array to
+        use none, so no bid is requested from any builder and p2p bids remain this key's only
+        source.
+      items:
+        $ref: "../keymanager-oapi.yaml#/components/schemas/BuilderEntry"
 
 BuilderEntry:
   type: object
