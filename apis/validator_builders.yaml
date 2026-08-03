@@ -40,7 +40,7 @@ get:
                   - url: "https://builder-a.example.com"
                     auth_data: "0x68747470733a2f2f6275696c6465722d612e6578616d706c652e636f6d"
                     max_execution_payment: "0"
-                    min_bid: "0"
+                    min_bid: "20000000"
                     builder_boost_factor: "100"
                   - url: "https://builder-b.example.com"
                     auth_data: "0x1234567890abcdef"
@@ -48,10 +48,6 @@ get:
                     max_execution_payment: "250000000"
                     min_bid: "10000000"
                     builder_boost_factor: "100"
-                  - builder_pubkey: "0xa057816155ad77931185101128655c0191bd0214c201ca48ed887f6c4c6adf334070efcd75140eada5ac83a92506dd7a"
-                    max_execution_payment: "0"
-                    min_bid: "20000000"
-                    builder_boost_factor: "120"
     "400":
       $ref: "../keymanager-oapi.yaml#/components/responses/BadRequest"
     "401":
@@ -70,10 +66,9 @@ post:
     Set the builder configuration for an individual validator key. The submission replaces the
     key's stored configuration in full; the server MUST NOT merge it with what was stored before.
 
-    Each entry in the `builders` array MUST contain at least one of `url` and `builder_pubkey`. No
-    two entries that contain a `url` may share both that `url` and their `auth_data`, and no two
-    entries without one may share a `builder_pubkey`. The server MUST reject any of these with a 400
-    rather than storing a partial list or silently dropping an entry.
+    Each entry in the `builders` array MUST contain a `url`, and no two entries may share both
+    their `url` and their `auth_data`. The server MUST reject a submission that violates either
+    rule with a 400 rather than storing a partial list or silently dropping an entry.
 
     `POST` always leaves the key configured; use `DELETE` to remove the configuration so the key
     follows the validator client again. An empty `builders` array is a configuration that names no
@@ -103,7 +98,8 @@ post:
               builders:
                 - url: "https://builder-a.example.com"
                   max_execution_payment: "0"
-                - builder_pubkey: "0xa057816155ad77931185101128655c0191bd0214c201ca48ed887f6c4c6adf334070efcd75140eada5ac83a92506dd7a"
+                - url: "https://builder-b.example.com"
+                  builder_pubkey: "0xa057816155ad77931185101128655c0191bd0214c201ca48ed887f6c4c6adf334070efcd75140eada5ac83a92506dd7a"
                   max_execution_payment: "0"
                   builder_boost_factor: "120"
   responses:

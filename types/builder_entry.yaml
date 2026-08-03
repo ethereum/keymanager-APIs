@@ -12,13 +12,12 @@ BuilderConfig:
 
     `BuilderConfig` carries a `min_bid` and a `builder_boost_factor` that are this key's defaults.
     An entry that omits its own takes the default, so one value covers every builder without being
-    repeated on each entry, and the defaults also apply to bids from builders that no entry names.
+    repeated on each entry, and the defaults also apply to p2p bids.
 
     The validator client resolves every entry before it reaches the beacon node. An omitted
     `min_bid` or `builder_boost_factor` takes this key's default, and then the validator client's
     own configuration; an omitted `max_execution_payment` or `auth_data` takes the validator
-    client's configuration. An omitted `url` or `builder_pubkey` is not filled in: its absence is
-    what tells the beacon node that the entry requests no bid, or supplies no p2p policy.
+    client's configuration. An omitted `builder_pubkey` is not filled in.
   required: [enabled]
   properties:
     enabled:
@@ -31,14 +30,14 @@ BuilderConfig:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
         - description: |
             This key's default `min_bid`, in Gwei. Applies to any entry that omits its own, and to
-            a bid from a builder no entry identifies.
+            p2p bids.
           example: "10000000"
     builder_boost_factor:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
         - description: |
             This key's default `builder_boost_factor`. Applies to any entry that omits its own, and
-            to a bid from a builder no entry identifies.
+            to p2p bids.
           example: "100"
     builders:
       type: array
@@ -54,27 +53,24 @@ BuilderConfig:
 BuilderEntry:
   type: object
   description: |
-    One builder a validator key may source blocks from. At least one of `url` and `builder_pubkey`
-    MUST be present.
+    One builder a validator key may source blocks from.
 
-    An entry that contains a `url` is a bid request, and no two of them may share both that `url`
-    and their `auth_data`. `url` is compared as the exact string and `auth_data` as the decoded
-    bytes, so hex case does not distinguish entries, and an omitted `auth_data` is compared as the
-    value the validator client would derive for it. One request is made per entry, so several
-    entries MAY share a `url` with different `auth_data`, since several builders may be reachable
-    at one `url`. An entry with no `url` supplies p2p policy instead, and no two of them may share
-    a `builder_pubkey`.
+    No two entries may share both their `url` and their `auth_data`. `url` is compared as the
+    exact string and `auth_data` as the decoded bytes, so hex case does not distinguish entries,
+    and an omitted `auth_data` is compared as the value the validator client would derive for it.
+    One request is made per entry, so several entries MAY share a `url` with different `auth_data`,
+    since several builders may be reachable at one `url`.
 
     See [produceBlockV4](https://ethereum.github.io/beacon-APIs/#/Validator/produceBlockV4) for the
     selection rule.
+  required: [url]
   properties:
     url:
       type: string
       format: uri
       maxLength: 2048  # MAX_BUILDER_URL_SIZE
       description: |
-        The URL this entry's requests are sent to. Omit it to supply policy for this builder's p2p
-        bids without requesting one.
+        The URL this entry's requests are sent to.
       example: "https://builder.example.com"
     auth_data:
       type: string
@@ -92,16 +88,13 @@ BuilderEntry:
         builder, and requires no coordination between the signers of a distributed validator. That
         is purely a convention about what tooling writes into the field.
 
-        Omitting it on an entry that contains a `url` leaves the validator client to derive it the
-        same way, since the builder requires authentication on every bid request. An entry with no
-        `url` requests no bid, so it needs no `auth_data`.
+        Omitting it leaves the validator client to derive it the same way, since the builder
+        requires authentication on every bid request.
       example: "0x68747470733a2f2f6275696c6465722e6578616d706c652e636f6d"
     builder_pubkey:
       description: |
-        The builder's BLS public key, distinct from the validator `pubkey` in the request path. On
-        an entry with a `url` it filters the response: a builder-API bid not signed by it MUST NOT
-        be accepted. On an entry without one it identifies the builder whose p2p bids this entry
-        applies to. _48-bytes, hex encoded with 0x prefix, case insensitive._
+        The builder's BLS public key. It filters this entry's responses: a bid not signed by it
+        MUST NOT be accepted. _48-bytes, hex encoded with 0x prefix, case insensitive._
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
     max_execution_payment:
