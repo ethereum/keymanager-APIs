@@ -3,12 +3,10 @@ BuilderConfig:
   description: |
     How a validator key sources blocks from builders.
 
-    `enabled: false` stops this key sourcing builder bids at all, including from any builders the
-    validator client is configured with globally. This is how a single key opts out of an otherwise
-    global builder setup, and differs from having no configuration, which follows the validator
-    client in full.
-
-    When `enabled` is `true`, `builders` selects which builders this key uses.
+    An empty `builders` list requests bids from no builder, overriding any builders the validator
+    client is configured with globally; with a `builder_boost_factor` of `0` the key also prefers
+    its local build. This differs from having no configuration, which follows the validator client
+    in full.
 
     `BuilderConfig` carries a `min_bid` and a `builder_boost_factor` that are this key's defaults.
     An entry that omits its own takes the default, so one value covers every builder without being
@@ -18,13 +16,7 @@ BuilderConfig:
     `min_bid` or `builder_boost_factor` takes this key's default, and then the validator client's
     own configuration; an omitted `max_execution_payment` or `auth_data` takes the validator
     client's configuration. An omitted `builder_pubkey` is not filled in.
-  required: [enabled]
   properties:
-    enabled:
-      type: boolean
-      description: |
-        Whether blocks may be sourced from builders for this key.
-      example: true
     min_bid:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
@@ -38,6 +30,10 @@ BuilderConfig:
         - description: |
             This key's default `builder_boost_factor`. Applies to any entry that omits its own, and
             to p2p bids.
+
+            * `0`: prefer the local payload unless an error makes it unviable.
+            * `100`: profit maximization; choose whichever pays more.
+            * `2**64 - 1`: prefer the bid unless an error or health check makes it unviable.
           example: "100"
     builders:
       type: array

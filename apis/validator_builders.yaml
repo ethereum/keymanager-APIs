@@ -33,7 +33,6 @@ get:
             BuilderConfig:
               value:
                 data:
-                  enabled: true
                   min_bid: "10000000"
                   builder_boost_factor: "100"
                   builders:
@@ -92,7 +91,6 @@ post:
         examples:
           BuilderConfig:
             value:
-              enabled: true
               min_bid: "10000000"
               builder_boost_factor: "100"
               builders:
@@ -124,9 +122,9 @@ delete:
     own configuration, in accordance with the startup of the validator client, exactly as a key that
     was never configured does.
 
-    This is not the same as `enabled: false`, which keeps a configuration saying this key sources no
-    builder bids at all. To stop using one builder while keeping the others, `POST` the remaining
-    entries of the `builders` array instead.
+    This is not the same as an empty `builders` list, which is a stored configuration saying this
+    key sources no builder-API bids. To stop using one builder while keeping the others, `POST` the
+    remaining entries of the `builders` array instead.
   security:
     - bearerAuth: []
   tags:
