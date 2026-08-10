@@ -1,7 +1,7 @@
 BuilderConfig:
   type: object
   description: |
-    How a validator key sources blocks from builders.
+    How a validator public key sources blocks from builders.
 
     An empty `builders` list requests bids from no builder, overriding any builders the validator
     client is configured with globally; with a `builder_boost_factor` of `0` the key also prefers
@@ -15,7 +15,7 @@ BuilderConfig:
     The validator client resolves every entry before it reaches the beacon node. An omitted
     `min_bid` or `builder_boost_factor` takes this key's default, and then the validator client's
     own configuration; an omitted `max_execution_payment` or `auth_data` takes the validator
-    client's configuration. An omitted `builder_pubkey` is not filled in.
+    client's configuration; an omitted `builder_pubkeys` resolves to the empty list.
   properties:
     min_bid:
       allOf:
@@ -49,7 +49,7 @@ BuilderConfig:
 BuilderEntry:
   type: object
   description: |
-    One builder a validator key may source blocks from.
+    One builder a validator public key may source blocks from.
 
     No two entries may share both their `url` and their `auth_data`. `url` is compared as the
     exact string and `auth_data` as the decoded bytes, so hex case does not distinguish entries,
@@ -87,12 +87,16 @@ BuilderEntry:
         Omitting it leaves the validator client to derive it the same way, since the builder
         requires authentication on every bid request.
       example: "0x68747470733a2f2f6275696c6465722e6578616d706c652e636f6d"
-    builder_pubkey:
+    builder_pubkeys:
+      type: array
+      maxItems: 64  # MAX_BUILDER_PUBKEYS
       description: |
-        The builder's BLS public key. It filters this entry's responses: a bid not signed by it
-        MUST NOT be accepted. _48-bytes, hex encoded with 0x prefix, case insensitive._
-      allOf:
-        - $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+        The builder BLS public keys this entry accepts bids from. Empty or omitted accepts any
+        builder; otherwise a bid not signed by one of them MUST NOT be accepted.
+      items:
+        allOf:
+          - $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+          - description: "A builder's BLS public key. _48-bytes, hex encoded with 0x prefix, case insensitive._"
     max_execution_payment:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
