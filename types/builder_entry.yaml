@@ -16,6 +16,7 @@ BuilderConfig:
     `min_bid` or `builder_boost_factor` takes this key's default, and then the validator client's
     own configuration; an omitted `max_execution_payment` or `auth_data` takes the validator
     client's configuration; an omitted `builder_pubkeys` resolves to the empty list.
+  required: []
   properties:
     min_bid:
       allOf:
