@@ -90,8 +90,9 @@ BuilderEntry:
         builder, and requires no coordination between the signers of a distributed validator. That
         is purely a convention about what tooling writes into the field.
 
-        Omitting it leaves the validator client to derive it the same way, since the builder
-        requires authentication on every bid request. A zero-length `auth_data` is invalid.
+        Omitting it leaves the validator client to set it to the UTF-8 bytes of the entry's
+        `url` verbatim, since the builder requires authentication on every bid request. A
+        zero-length `auth_data` is invalid.
       example: "0x68747470733a2f2f6275696c6465722e6578616d706c652e636f6d"
     builder_pubkeys:
       type: array
