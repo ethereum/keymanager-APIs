@@ -71,8 +71,8 @@ post:
     their `url` and their `auth_data`. The server MUST reject a submission that violates either
     rule with a 400 rather than storing a partial list or silently dropping an entry.
 
-    `POST` always leaves the key configured; use `DELETE` to remove the configuration so the key
-    follows the validator client's own configuration again. An empty `builders` array is a
+    A `POST` body of `{}` stores a configuration with no overrides, which resolves identically to
+    having none, so it is behaviorally equivalent to `DELETE`. An empty `builders` array is a
     configuration that names no builders, not a removal.
   security:
     - bearerAuth: []
