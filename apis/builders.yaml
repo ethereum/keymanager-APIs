@@ -5,8 +5,10 @@ get:
     Get the builder configuration in effect for an individual validator public key, with omitted
     values resolved: an entry that omits a field is returned with the value that will be used for
     it, and a key with no configuration of its own is returned with the validator client's own
-    configuration. A returned configuration is therefore fully resolved, so re-submitting it with
-    `POST` fixes those values rather than leaving them to follow the defaults.
+    configuration. An omitted `builders` list is returned resolved the same way, to the validator
+    client's globally configured builders, or `[]` if there are none. A returned configuration is
+    therefore fully resolved, so re-submitting it with `POST` fixes those values rather than
+    leaving them to follow the defaults.
   security:
     - bearerAuth: []
   tags:
