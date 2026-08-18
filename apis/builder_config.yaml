@@ -1,6 +1,6 @@
 get:
-  operationId: getBuilders
-  summary: Get Builders
+  operationId: getBuilderConfig
+  summary: Get Builder Configuration
   description: |
     Get the builder configuration in effect for an individual validator public key, with omitted
     values resolved: an entry that omits a field is returned with the value that will be used for
@@ -12,7 +12,7 @@ get:
   security:
     - bearerAuth: []
   tags:
-    - Builders
+    - Builder Config
   parameters:
       - in: path
         name: pubkey
@@ -25,7 +25,7 @@ get:
       content:
         application/json:
           schema:
-            title: GetBuildersResponse
+            title: GetBuilderConfigResponse
             type: object
             required: [data]
             properties:
@@ -62,8 +62,8 @@ get:
       $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
 
 post:
-  operationId: setBuilders
-  summary: Set Builders
+  operationId: setBuilderConfig
+  summary: Set Builder Configuration
   description: |
     Set the builder configuration for an individual validator public key. The submission replaces
     the key's stored configuration in full; the server MUST NOT merge it with what was stored
@@ -79,7 +79,7 @@ post:
   security:
     - bearerAuth: []
   tags:
-    - Builders
+    - Builder Config
   parameters:
       - in: path
         name: pubkey
@@ -119,8 +119,8 @@ post:
       $ref: "../keymanager-oapi.yaml#/components/responses/InternalError"
 
 delete:
-  operationId: deleteBuilders
-  summary: Delete Configured Builders
+  operationId: deleteBuilderConfig
+  summary: Delete Builder Configuration
   description: |
     Remove this public key's builder configuration entirely. The key then follows the validator
     client's own configuration, in accordance with the startup of the validator client, exactly as
@@ -132,7 +132,7 @@ delete:
   security:
     - bearerAuth: []
   tags:
-    - Builders
+    - Builder Config
   parameters:
       - in: path
         name: pubkey
