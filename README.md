@@ -28,15 +28,29 @@ Learn about the Consensus Validator Clients that implement these APIs on the [Et
 
 ### v1 APIS
 
-| Validator Client/Remote Managers | local keymanager | remote keymanager | fee recipient | gas limit  | graffiti | builder config |
-| -------------------------------- | ---------------- | ----------------- | ------------- | ---------- | -------- | -------------- |
-| Prysm                            | production       | production        | production    | production | -        | -              |
-| Teku                             | production       | production        | production    | production | -        | -              |
-| Lighthouse                       | v2.1.2           | v2.3.0            | v2.4.0        | v3.0.0     | -        | -              |
-| Nimbus                           | production       | production        | 22.7.0        | -          | -        | -              |
-| Lodestar                         | v0.35.0          | v0.40.0           | v1.2.0        | v1.2.0     | v1.12.0  | -              |
-| Vero                             | N/A              | v1.1.0            | v1.1.0        | v1.1.0     | v1.1.0   | -              |
-| Web3signer                       | production       | N/A               | N/A           | N/A        | N/A      | N/A            |
+#### Key management
+
+| Client     | Local keymanager | Remote keymanager |
+| ---------- | ---------------- | ----------------- |
+| Prysm      | production       | production        |
+| Teku       | production       | production        |
+| Lighthouse | v2.1.2           | v2.3.0            |
+| Nimbus     | production       | production        |
+| Lodestar   | v0.35.0          | v0.40.0           |
+| Vero       | N/A              | v1.1.0            |
+| Web3signer | production       | N/A               |
+
+#### Validator configuration
+
+| Client     | Fee recipient | Gas limit  | Graffiti | Builder config |
+| ---------- | ------------- | ---------- | -------- | -------------- |
+| Prysm      | production    | production | -        | -              |
+| Teku       | production    | production | -        | -              |
+| Lighthouse | v2.4.0        | v3.0.0     | -        | -              |
+| Nimbus     | 22.7.0        | -          | -        | -              |
+| Lodestar   | v1.2.0        | v1.2.0     | v1.12.0  | -              |
+| Vero       | v1.1.0        | v1.1.0     | v1.1.0   | -              |
+| Web3signer | N/A           | N/A        | N/A      | N/A            |
 
 ## Use Cases
 
