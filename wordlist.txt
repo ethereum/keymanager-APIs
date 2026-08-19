@@ -19,3 +19,8 @@ VPN
 BLS
 oapi
 Vero
+Gwei
+uri
+UTF
+RequestAuth
+produceBlockV

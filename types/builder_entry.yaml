@@ -1,0 +1,136 @@
+BuilderConfig:
+  type: object
+  description: |
+    How a validator public key sources blocks from builders.
+
+    An empty `builders` list requests bids from no builder, overriding any builders the validator
+    client is configured with globally; with a `builder_boost_factor` of `0` the key also prefers
+    its local build. This differs from having no configuration, which follows the validator client
+    in full.
+
+    `BuilderConfig` carries a `min_bid` and a `builder_boost_factor` that are this key's defaults.
+    An entry that omits its own takes the default, so one value covers every builder without being
+    repeated on each entry, and the defaults also apply to p2p bids.
+
+    The validator client resolves the configuration before it reaches the beacon node. An omitted
+    `builders` list resolves to the builders the validator client is configured with globally, or
+    to an empty list if there are none, and this key's defaults apply to those entries all the
+    same. Within an entry, an omitted `min_bid` or `builder_boost_factor` takes this key's
+    default, and then the validator client's own configuration; an omitted
+    `max_execution_payment` takes the validator client's configuration; an omitted `auth_data` is
+    derived from the entry's `url` as described in `BuilderEntry`; an omitted `builder_pubkeys`
+    resolves to the empty list.
+  required: []
+  properties:
+    min_bid:
+      allOf:
+        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
+        - description: |
+            This key's default `min_bid`, in Gwei. Applies to any entry that omits its own, and to
+            p2p bids.
+          example: "10000000"
+    builder_boost_factor:
+      allOf:
+        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
+        - description: |
+            This key's default `builder_boost_factor`. Applies to any entry that omits its own, and
+            to p2p bids.
+
+            * `0`: prefer the local payload unless an error makes it unviable.
+            * `100`: profit maximization; choose whichever pays more.
+            * `2**64 - 1`: prefer the bid unless an error or health check makes it unviable.
+          example: "100"
+    builders:
+      type: array
+      maxItems: 64  # MAX_BUILDER_ENTRIES
+      description: |
+        The builders this key sources bids from, replacing any the validator client is configured
+        with. Omit this field to use the validator client's builders instead. Send an empty array to
+        use none, so no bid is requested from any builder and p2p bids remain this key's only
+        source.
+      items:
+        $ref: "../keymanager-oapi.yaml#/components/schemas/BuilderEntry"
+
+BuilderEntry:
+  type: object
+  description: |
+    One builder a validator public key may source blocks from.
+
+    No two entries may share both their `url` and their `auth_data`. `url` is compared as the
+    exact string and `auth_data` as the decoded bytes, so hex case does not distinguish entries,
+    and an omitted `auth_data` is compared as the value the validator client would derive for it.
+    One request is made per entry, so several entries MAY share a `url` with different `auth_data`,
+    since several builders may be reachable at one `url`.
+
+    See [produceBlockV4](https://ethereum.github.io/beacon-APIs/#/Validator/produceBlockV4) for the
+    selection rule.
+  required: [url]
+  properties:
+    url:
+      type: string
+      format: uri
+      minLength: 1
+      maxLength: 2048  # MAX_BUILDER_URL_SIZE
+      description: |
+        The URL this entry's requests are sent to.
+      example: "https://builder.example.com"
+    auth_data:
+      type: string
+      pattern: "^0x(?:[a-fA-F0-9]{2}){1,4096}$"
+      description: |
+        Opaque data used to authenticate this validator's requests to the builder. Agreed with the
+        builder out of band and placed verbatim in the `RequestAuth.data` the validator signs. The
+        builder checks the signature and the exact bytes. Its meaning is left to the two parties
+        (for example, a shared secret). At most `MAX_DATA_SIZE` (4096) bytes.
+
+        The keymanager treats this value as opaque bytes: it only ever compares `auth_data` values
+        for equality, and never parses or inspects them. When no value has been agreed with the
+        builder out of band, the caller SHOULD set `auth_data` to the UTF-8 bytes of the builder's
+        own advertised URL, exactly as advertised, hex encoded: it is deterministic, distinct per
+        builder, and requires no coordination between the signers of a distributed validator. That
+        is purely a convention about what tooling writes into the field.
+
+        Omitting it leaves the validator client to set it to the UTF-8 bytes of the entry's
+        `url` verbatim, since the builder requires authentication on every bid request. A
+        zero-length `auth_data` is invalid.
+      example: "0x68747470733a2f2f6275696c6465722e6578616d706c652e636f6d"
+    builder_pubkeys:
+      type: array
+      maxItems: 64  # MAX_BUILDER_PUBKEYS
+      description: |
+        The builder BLS public keys this entry accepts bids from. Empty or omitted accepts any
+        builder; otherwise a bid not signed by one of them MUST NOT be accepted.
+      items:
+        allOf:
+          - $ref: "../keymanager-oapi.yaml#/components/schemas/Pubkey"
+          - description: "A builder's BLS public key. _48-bytes, hex encoded with 0x prefix, case insensitive._"
+    max_execution_payment:
+      allOf:
+        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
+        - description: |
+            A ceiling, in Gwei, on the trusted execution payment accepted from this builder. The
+            remainder of its payment is expected in the trustless (in-protocol) form.
+
+            `0` accepts no execution payments from this builder, requiring the whole payment to be
+            trustless. `MAX_EXECUTION_PAYMENT` (`2**64 - 1`) accepts any amount.
+          example: "250000000"
+    min_bid:
+      allOf:
+        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
+        - description: |
+            A floor, in Gwei, on the total payment accepted from this builder, counting a bid's
+            `value` plus its `execution_payment`.
+          example: "10000000"
+    builder_boost_factor:
+      allOf:
+        - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
+        - description: |
+            Percentage multiplier weighting this builder's bid against other builder bids and the
+            local payload. Below `100` disfavors this builder, above `100` favors it.
+
+            Values that encode common preferences:
+
+            * `0`: prefer the local payload unless an error makes it unviable.
+            * `100`: profit maximization; choose whichever pays more.
+            * `2**64 - 1`: prefer this builder unless an error or health check makes it unviable.
+          example: "100"
