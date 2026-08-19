@@ -1,0 +1,3664 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Eth2 key manager API",
+    "description": "API specification for a key manager client, which enables users to manage keystores.\n\nThe key manager API is served by the binary holding the validator keys. This binary may be a remote signer or a validator client.\n\nAll routes SHOULD be exposed through a secure channel, such as with HTTPs, an SSH tunnel, a VPN, etc.\n\nAll requests by default send and receive JSON, and as such should have either or both of the \"Content-Type: application/json\"\nand \"Accept: application/json\" headers.\n\nAll sensitive routes MUST be authenticated with a token.\n\nThe key manager binary SHOULD accept a configuration parameter: `token-file`, which designates a file containing the hex-encoded token\nof at least 256 bits. If such a parameter is not given, the client SHOULD generate such a token and write it to a file, to be reused\nacross multiple restarts of the binary. If such a parameter is given, but the file or token cannot be read, the client SHOULD treat this\nas an error: either abort the startup, or show the error and continue without exposing the key manager routes.\n",
+    "version": "v1.2.0-alpha.0",
+    "contact": {
+      "name": "Ethereum Github",
+      "url": "https://github.com/ethereum/keymanager-APIs/issues"
+    },
+    "license": {
+      "name": "Creative Commons Zero v1.0 Universal",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/"
+    }
+  },
+  "servers": [
+    {
+      "url": "{server_url}",
+      "variables": {
+        "server_url": {
+          "description": "key manager API url",
+          "default": "http://localhost/"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Builder Config",
+      "description": "Set of endpoints for management of builder configuration."
+    },
+    {
+      "name": "Fee Recipient",
+      "description": "Set of endpoints for management of fee recipient."
+    },
+    {
+      "name": "Gas Limit",
+      "description": "Set of endpoints for management of gas limits."
+    },
+    {
+      "name": "Graffiti",
+      "description": "Set of endpoints for management of graffiti."
+    },
+    {
+      "name": "Local Key Manager",
+      "description": "Set of endpoints for key management of local keys."
+    },
+    {
+      "name": "Remote Key Manager",
+      "description": "Set of endpoints for key management of external keys."
+    },
+    {
+      "name": "Voluntary Exit",
+      "description": "Set of endpoints for voluntary exits."
+    }
+  ],
+  "paths": {
+    "/eth/v1/keystores": {
+      "get": {
+        "operationId": "listKeys",
+        "summary": "List Keys.",
+        "description": "List all validating pubkeys known to and decrypted by this keymanager binary\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Local Key Manager"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "ListKeysResponse",
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "validating_pubkey"
+                        ],
+                        "properties": {
+                          "validating_pubkey": {
+                            "type": "string",
+                            "pattern": "^0x[a-fA-F0-9]{96}$",
+                            "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+                            "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                          },
+                          "derivation_path": {
+                            "type": "string",
+                            "description": "The derivation path (if present in the imported keystore).",
+                            "example": "m/12381/3600/0/0/0"
+                          },
+                          "readonly": {
+                            "type": "boolean",
+                            "description": "The key associated with this pubkey cannot be deleted from the API"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "importKeystores",
+        "summary": "Import Keystores.",
+        "description": "Import keystores generated by the Eth2.0 deposit CLI tooling. `passwords[i]` must unlock `keystores[i]`.\n\nUsers SHOULD send slashing_protection data associated with the imported pubkeys. MUST follow the format defined in\nEIP-3076: Slashing Protection Interchange Format.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Local Key Manager"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "keystores",
+                  "passwords"
+                ],
+                "properties": {
+                  "keystores": {
+                    "type": "array",
+                    "description": "JSON-encoded keystore files generated with the Launchpad.",
+                    "items": {
+                      "type": "string",
+                      "description": "JSON serialized representation of a single keystore in EIP-2335: BLS12-381 Keystore format.\n",
+                      "example": "{\"version\":4,\"uuid\":\"9f75a3fa-1e5a-49f9-be3d-f5a19779c6fa\",\"path\":\"m/12381/3600/0/0/0\",\"pubkey\":\"0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a\",\"crypto\":{\"kdf\":{\"function\":\"pbkdf2\",\"params\":{\"dklen\":32,\"c\":262144,\"prf\":\"hmac-sha256\",\"salt\":\"8ff8f22ef522a40f99c6ce07fdcfc1db489d54dfbc6ec35613edf5d836fa1407\"},\"message\":\"\"},\"checksum\":{\"function\":\"sha256\",\"params\":{},\"message\":\"9678a69833d2576e3461dd5fa80f6ac73935ae30d69d07659a709b3cd3eddbe3\"},\"cipher\":{\"function\":\"aes-128-ctr\",\"params\":{\"iv\":\"31b69f0ac97261e44141b26aa0da693f\"},\"message\":\"e8228bafec4fcbaca3b827e586daad381d53339155b034e5eaae676b715ab05e\"}}}"
+                    }
+                  },
+                  "passwords": {
+                    "type": "array",
+                    "description": "Passwords to unlock imported keystore files. `passwords[i]` must unlock `keystores[i]`.",
+                    "items": {
+                      "type": "string",
+                      "example": "ABCDEFGH01234567ABCDEFGH01234567"
+                    }
+                  },
+                  "slashing_protection": {
+                    "type": "string",
+                    "description": "JSON serialized representation of the slash protection data in format defined in EIP-3076: Slashing Protection Interchange Format.\n",
+                    "example": "{\"metadata\":{\"interchange_format_version\":\"5\",\"genesis_validators_root\":\"0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2\"},\"data\":[{\"pubkey\":\"0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a\",\"signed_blocks\":[],\"signed_attestations\":[]}]}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "ImportKeystoresResponse",
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "description": "Status result of each `request.keystores` with same length and order of `request.keystores`",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "description": "- imported: Keystore successfully decrypted and imported to keymanager permanent storage\n- duplicate: Keystore's pubkey is already known to the keymanager\n- error: Any other status different to the above: decrypting error, I/O errors, etc.\n",
+                            "enum": [
+                              "imported",
+                              "duplicate",
+                              "error"
+                            ],
+                            "example": "imported"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "error message if status == error"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteKeys",
+        "summary": "Delete Keys.",
+        "description": "DELETE must delete all keys from `request.pubkeys` that are known to the keymanager and exist in its\npersistent storage. Additionally, DELETE must fetch the slashing protection data for the requested keys from\npersistent storage, which must be retained (and not deleted) after the response has been sent. Therefore in the\ncase of two identical delete requests being made, both will have access to slashing protection data.\n\nIn a single atomic sequential operation the keymanager must:\n1. Guarantee that key(s) can not produce any more signature; only then\n2. Delete key(s) and serialize its associated slashing protection data\n\nDELETE should never return a 404 response, even if all pubkeys from request.pubkeys have no extant keystores\nnor slashing protection data.\n\nSlashing protection data must only be returned for keys from `request.pubkeys` for which a\n`deleted` or `not_active` status is returned.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Local Key Manager"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "pubkeys"
+                ],
+                "properties": {
+                  "pubkeys": {
+                    "type": "array",
+                    "description": "List of public keys to delete.",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^0x[a-fA-F0-9]{96}$",
+                      "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+                      "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "DeleteKeysResponse",
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "slashing_protection"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "description": "Deletion status of all keys in `request.pubkeys` in the same order.",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "description": "- deleted: key was active and removed\n- not_active: slashing protection data returned but key was not active\n- not_found: key was not found to be removed, and no slashing data can be returned\n- error: unexpected condition meant the key could not be removed (the key was actually found, but we couldn't stop using it) - this would be a sign that making it active elsewhere would almost certainly cause you headaches / slashing conditions etc.\n",
+                            "enum": [
+                              "deleted",
+                              "not_active",
+                              "not_found",
+                              "error"
+                            ],
+                            "example": "deleted"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "error message if status == error"
+                          }
+                        }
+                      }
+                    },
+                    "slashing_protection": {
+                      "type": "string",
+                      "description": "JSON serialized representation of the slash protection data in format defined in EIP-3076: Slashing Protection Interchange Format.\n",
+                      "example": "{\"metadata\":{\"interchange_format_version\":\"5\",\"genesis_validators_root\":\"0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2\"},\"data\":[{\"pubkey\":\"0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a\",\"signed_blocks\":[],\"signed_attestations\":[]}]}"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/remotekeys": {
+      "get": {
+        "operationId": "listRemoteKeys",
+        "summary": "List Remote Keys.",
+        "description": "List all remote validating pubkeys known to this validator client binary\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Remote Key Manager"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "ListRemoteKeysResponse",
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "pubkey"
+                        ],
+                        "properties": {
+                          "pubkey": {
+                            "type": "string",
+                            "pattern": "^0x[a-fA-F0-9]{96}$",
+                            "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+                            "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                          },
+                          "url": {
+                            "description": "URL to API implementing EIP-3030: BLS Remote Signer HTTP API",
+                            "type": "string",
+                            "example": "https://remote.signer"
+                          },
+                          "readonly": {
+                            "type": "boolean",
+                            "description": "The signer associated with this pubkey cannot be deleted from the API"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "importRemoteKeys",
+        "summary": "Import Remote Keys.",
+        "description": "Import remote keys for the validator client to request duties for.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Remote Key Manager"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "remote_keys"
+                ],
+                "properties": {
+                  "remote_keys": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "pubkey"
+                      ],
+                      "properties": {
+                        "pubkey": {
+                          "type": "string",
+                          "pattern": "^0x[a-fA-F0-9]{96}$",
+                          "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+                          "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                        },
+                        "url": {
+                          "description": "URL to API implementing EIP-3030: BLS Remote Signer HTTP API",
+                          "type": "string",
+                          "example": "https://remote.signer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "ImportRemoteKeysResponse",
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "description": "Status result of each `request.remote_keys` with same length and order of `request.remote_keys`",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "description": "- imported: Remote key successfully imported to validator client permanent storage\n- duplicate: Remote key's pubkey is already known to the validator client\n- error: Any other status different to the above: I/O errors, etc.\n",
+                            "enum": [
+                              "imported",
+                              "duplicate",
+                              "error"
+                            ],
+                            "example": "imported"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "error message if status == error"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteRemoteKeys",
+        "summary": "Delete Remote Keys.",
+        "description": "DELETE must delete all keys from `request.pubkeys` that are known to the validator client and exist in its\npersistent storage.\n\nDELETE should never return a 404 response, even if all pubkeys from request.pubkeys have no existing keystores.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Remote Key Manager"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "pubkeys"
+                ],
+                "properties": {
+                  "pubkeys": {
+                    "type": "array",
+                    "description": "List of public keys to delete.",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^0x[a-fA-F0-9]{96}$",
+                      "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+                      "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "DeleteRemoteKeysResponse",
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "description": "Deletion status of all keys in `request.pubkeys` in the same order.",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "description": "- deleted: key was active and removed\n- not_found: key was not found to be removed\n- error: unexpected condition meant the key could not be removed (the key was actually found,\n  but we couldn't stop using it) - this would be a sign that making it active elsewhere would\n  almost certainly cause you headaches / slashing conditions etc.\n",
+                            "enum": [
+                              "deleted",
+                              "not_found",
+                              "error"
+                            ],
+                            "example": "deleted"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "error message if status == error"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/validator/{pubkey}/builder_config": {
+      "get": {
+        "operationId": "getBuilderConfig",
+        "summary": "Get Builder Configuration",
+        "description": "Get the builder configuration in effect for an individual validator public key, with omitted\nvalues resolved: an entry that omits a field is returned with the value that will be used for\nit, and a key with no configuration of its own is returned with the validator client's own\nconfiguration. An omitted `builders` list is returned resolved the same way, to the validator\nclient's globally configured builders, or `[]` if there are none. A returned configuration is\ntherefore fully resolved, so re-submitting it with `POST` fixes those values rather than\nleaving them to follow the defaults.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Builder Config"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pubkey",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{96}$",
+              "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+              "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "GetBuilderConfigResponse",
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "description": "How a validator public key sources blocks from builders.\n\nAn empty `builders` list requests bids from no builder, overriding any builders the validator\nclient is configured with globally; with a `builder_boost_factor` of `0` the key also prefers\nits local build. This differs from having no configuration, which follows the validator client\nin full.\n\n`BuilderConfig` carries a `min_bid` and a `builder_boost_factor` that are this key's defaults.\nAn entry that omits its own takes the default, so one value covers every builder without being\nrepeated on each entry, and the defaults also apply to p2p bids.\n\nThe validator client resolves the configuration before it reaches the beacon node. An omitted\n`builders` list resolves to the builders the validator client is configured with globally, or\nto an empty list if there are none, and this key's defaults apply to those entries all the\nsame. Within an entry, an omitted `min_bid` or `builder_boost_factor` takes this key's\ndefault, and then the validator client's own configuration; an omitted\n`max_execution_payment` takes the validator client's configuration; an omitted `auth_data` is\nderived from the entry's `url` as described in `BuilderEntry`; an omitted `builder_pubkeys`\nresolves to the empty list.\n",
+                      "required": [],
+                      "properties": {
+                        "min_bid": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^(0|[1-9][0-9]{0,19})$",
+                              "example": "30000000"
+                            },
+                            {
+                              "description": "This key's default `min_bid`, in Gwei. Applies to any entry that omits its own, and to\np2p bids.\n",
+                              "example": "10000000"
+                            }
+                          ]
+                        },
+                        "builder_boost_factor": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^(0|[1-9][0-9]{0,19})$",
+                              "example": "30000000"
+                            },
+                            {
+                              "description": "This key's default `builder_boost_factor`. Applies to any entry that omits its own, and\nto p2p bids.\n\n* `0`: prefer the local payload unless an error makes it unviable.\n* `100`: profit maximization; choose whichever pays more.\n* `2**64 - 1`: prefer the bid unless an error or health check makes it unviable.\n",
+                              "example": "100"
+                            }
+                          ]
+                        },
+                        "builders": {
+                          "type": "array",
+                          "maxItems": 64,
+                          "description": "The builders this key sources bids from, replacing any the validator client is configured\nwith. Omit this field to use the validator client's builders instead. Send an empty array to\nuse none, so no bid is requested from any builder and p2p bids remain this key's only\nsource.\n",
+                          "items": {
+                            "type": "object",
+                            "description": "One builder a validator public key may source blocks from.\n\nNo two entries may share both their `url` and their `auth_data`. `url` is compared as the\nexact string and `auth_data` as the decoded bytes, so hex case does not distinguish entries,\nand an omitted `auth_data` is compared as the value the validator client would derive for it.\nOne request is made per entry, so several entries MAY share a `url` with different `auth_data`,\nsince several builders may be reachable at one `url`.\n\nSee [produceBlockV4](https://ethereum.github.io/beacon-APIs/#/Validator/produceBlockV4) for the\nselection rule.\n",
+                            "required": [
+                              "url"
+                            ],
+                            "properties": {
+                              "url": {
+                                "type": "string",
+                                "format": "uri",
+                                "minLength": 1,
+                                "maxLength": 2048,
+                                "description": "The URL this entry's requests are sent to.\n",
+                                "example": "https://builder.example.com"
+                              },
+                              "auth_data": {
+                                "type": "string",
+                                "pattern": "^0x(?:[a-fA-F0-9]{2}){1,4096}$",
+                                "description": "Opaque data used to authenticate this validator's requests to the builder. Agreed with the\nbuilder out of band and placed verbatim in the `RequestAuth.data` the validator signs. The\nbuilder checks the signature and the exact bytes. Its meaning is left to the two parties\n(for example, a shared secret). At most `MAX_DATA_SIZE` (4096) bytes.\n\nThe keymanager treats this value as opaque bytes: it only ever compares `auth_data` values\nfor equality, and never parses or inspects them. When no value has been agreed with the\nbuilder out of band, the caller SHOULD set `auth_data` to the UTF-8 bytes of the builder's\nown advertised URL, exactly as advertised, hex encoded: it is deterministic, distinct per\nbuilder, and requires no coordination between the signers of a distributed validator. That\nis purely a convention about what tooling writes into the field.\n\nOmitting it leaves the validator client to set it to the UTF-8 bytes of the entry's\n`url` verbatim, since the builder requires authentication on every bid request. A\nzero-length `auth_data` is invalid.\n",
+                                "example": "0x68747470733a2f2f6275696c6465722e6578616d706c652e636f6d"
+                              },
+                              "builder_pubkeys": {
+                                "type": "array",
+                                "maxItems": 64,
+                                "description": "The builder BLS public keys this entry accepts bids from. Empty or omitted accepts any\nbuilder; otherwise a bid not signed by one of them MUST NOT be accepted.\n",
+                                "items": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "pattern": "^0x[a-fA-F0-9]{96}$",
+                                      "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+                                      "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                                    },
+                                    {
+                                      "description": "A builder's BLS public key. _48-bytes, hex encoded with 0x prefix, case insensitive._"
+                                    }
+                                  ]
+                                }
+                              },
+                              "max_execution_payment": {
+                                "allOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                    "example": "30000000"
+                                  },
+                                  {
+                                    "description": "A ceiling, in Gwei, on the trusted execution payment accepted from this builder. The\nremainder of its payment is expected in the trustless (in-protocol) form.\n\n`0` accepts no execution payments from this builder, requiring the whole payment to be\ntrustless. `MAX_EXECUTION_PAYMENT` (`2**64 - 1`) accepts any amount.\n",
+                                    "example": "250000000"
+                                  }
+                                ]
+                              },
+                              "min_bid": {
+                                "allOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                    "example": "30000000"
+                                  },
+                                  {
+                                    "description": "A floor, in Gwei, on the total payment accepted from this builder, counting a bid's\n`value` plus its `execution_payment`.\n",
+                                    "example": "10000000"
+                                  }
+                                ]
+                              },
+                              "builder_boost_factor": {
+                                "allOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                    "example": "30000000"
+                                  },
+                                  {
+                                    "description": "Percentage multiplier weighting this builder's bid against other builder bids and the\nlocal payload. Below `100` disfavors this builder, above `100` favors it.\n\nValues that encode common preferences:\n\n* `0`: prefer the local payload unless an error makes it unviable.\n* `100`: profit maximization; choose whichever pays more.\n* `2**64 - 1`: prefer this builder unless an error or health check makes it unviable.\n",
+                                    "example": "100"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "BuilderConfig": {
+                    "value": {
+                      "data": {
+                        "min_bid": "10000000",
+                        "builder_boost_factor": "100",
+                        "builders": [
+                          {
+                            "url": "https://builder-a.example.com",
+                            "auth_data": "0x68747470733a2f2f6275696c6465722d612e6578616d706c652e636f6d",
+                            "builder_pubkeys": [],
+                            "max_execution_payment": "0",
+                            "min_bid": "20000000",
+                            "builder_boost_factor": "100"
+                          },
+                          {
+                            "url": "https://builder-b.example.com",
+                            "auth_data": "0x1234567890abcdef",
+                            "builder_pubkeys": [
+                              "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                            ],
+                            "max_execution_payment": "250000000",
+                            "min_bid": "10000000",
+                            "builder_boost_factor": "100"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The key was not found on the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "setBuilderConfig",
+        "summary": "Set Builder Configuration",
+        "description": "Set the builder configuration for an individual validator public key. The submission replaces\nthe key's stored configuration in full; the server MUST NOT merge it with what was stored\nbefore.\n\nEach entry in the `builders` array MUST contain a `url`, and no two entries may share both\ntheir `url` and their `auth_data`. The server MUST reject a submission that violates either\nrule with a 400 rather than storing a partial list or silently dropping an entry.\n\nA `POST` body of `{}` stores a configuration with no overrides, which resolves identically to\nhaving none, so it is behaviorally equivalent to `DELETE`. An empty `builders` array is a\nconfiguration that names no builders, not a removal.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Builder Config"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pubkey",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{96}$",
+              "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+              "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "How a validator public key sources blocks from builders.\n\nAn empty `builders` list requests bids from no builder, overriding any builders the validator\nclient is configured with globally; with a `builder_boost_factor` of `0` the key also prefers\nits local build. This differs from having no configuration, which follows the validator client\nin full.\n\n`BuilderConfig` carries a `min_bid` and a `builder_boost_factor` that are this key's defaults.\nAn entry that omits its own takes the default, so one value covers every builder without being\nrepeated on each entry, and the defaults also apply to p2p bids.\n\nThe validator client resolves the configuration before it reaches the beacon node. An omitted\n`builders` list resolves to the builders the validator client is configured with globally, or\nto an empty list if there are none, and this key's defaults apply to those entries all the\nsame. Within an entry, an omitted `min_bid` or `builder_boost_factor` takes this key's\ndefault, and then the validator client's own configuration; an omitted\n`max_execution_payment` takes the validator client's configuration; an omitted `auth_data` is\nderived from the entry's `url` as described in `BuilderEntry`; an omitted `builder_pubkeys`\nresolves to the empty list.\n",
+                "required": [],
+                "properties": {
+                  "min_bid": {
+                    "allOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(0|[1-9][0-9]{0,19})$",
+                        "example": "30000000"
+                      },
+                      {
+                        "description": "This key's default `min_bid`, in Gwei. Applies to any entry that omits its own, and to\np2p bids.\n",
+                        "example": "10000000"
+                      }
+                    ]
+                  },
+                  "builder_boost_factor": {
+                    "allOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(0|[1-9][0-9]{0,19})$",
+                        "example": "30000000"
+                      },
+                      {
+                        "description": "This key's default `builder_boost_factor`. Applies to any entry that omits its own, and\nto p2p bids.\n\n* `0`: prefer the local payload unless an error makes it unviable.\n* `100`: profit maximization; choose whichever pays more.\n* `2**64 - 1`: prefer the bid unless an error or health check makes it unviable.\n",
+                        "example": "100"
+                      }
+                    ]
+                  },
+                  "builders": {
+                    "type": "array",
+                    "maxItems": 64,
+                    "description": "The builders this key sources bids from, replacing any the validator client is configured\nwith. Omit this field to use the validator client's builders instead. Send an empty array to\nuse none, so no bid is requested from any builder and p2p bids remain this key's only\nsource.\n",
+                    "items": {
+                      "type": "object",
+                      "description": "One builder a validator public key may source blocks from.\n\nNo two entries may share both their `url` and their `auth_data`. `url` is compared as the\nexact string and `auth_data` as the decoded bytes, so hex case does not distinguish entries,\nand an omitted `auth_data` is compared as the value the validator client would derive for it.\nOne request is made per entry, so several entries MAY share a `url` with different `auth_data`,\nsince several builders may be reachable at one `url`.\n\nSee [produceBlockV4](https://ethereum.github.io/beacon-APIs/#/Validator/produceBlockV4) for the\nselection rule.\n",
+                      "required": [
+                        "url"
+                      ],
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "format": "uri",
+                          "minLength": 1,
+                          "maxLength": 2048,
+                          "description": "The URL this entry's requests are sent to.\n",
+                          "example": "https://builder.example.com"
+                        },
+                        "auth_data": {
+                          "type": "string",
+                          "pattern": "^0x(?:[a-fA-F0-9]{2}){1,4096}$",
+                          "description": "Opaque data used to authenticate this validator's requests to the builder. Agreed with the\nbuilder out of band and placed verbatim in the `RequestAuth.data` the validator signs. The\nbuilder checks the signature and the exact bytes. Its meaning is left to the two parties\n(for example, a shared secret). At most `MAX_DATA_SIZE` (4096) bytes.\n\nThe keymanager treats this value as opaque bytes: it only ever compares `auth_data` values\nfor equality, and never parses or inspects them. When no value has been agreed with the\nbuilder out of band, the caller SHOULD set `auth_data` to the UTF-8 bytes of the builder's\nown advertised URL, exactly as advertised, hex encoded: it is deterministic, distinct per\nbuilder, and requires no coordination between the signers of a distributed validator. That\nis purely a convention about what tooling writes into the field.\n\nOmitting it leaves the validator client to set it to the UTF-8 bytes of the entry's\n`url` verbatim, since the builder requires authentication on every bid request. A\nzero-length `auth_data` is invalid.\n",
+                          "example": "0x68747470733a2f2f6275696c6465722e6578616d706c652e636f6d"
+                        },
+                        "builder_pubkeys": {
+                          "type": "array",
+                          "maxItems": 64,
+                          "description": "The builder BLS public keys this entry accepts bids from. Empty or omitted accepts any\nbuilder; otherwise a bid not signed by one of them MUST NOT be accepted.\n",
+                          "items": {
+                            "allOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^0x[a-fA-F0-9]{96}$",
+                                "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+                                "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                              },
+                              {
+                                "description": "A builder's BLS public key. _48-bytes, hex encoded with 0x prefix, case insensitive._"
+                              }
+                            ]
+                          }
+                        },
+                        "max_execution_payment": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^(0|[1-9][0-9]{0,19})$",
+                              "example": "30000000"
+                            },
+                            {
+                              "description": "A ceiling, in Gwei, on the trusted execution payment accepted from this builder. The\nremainder of its payment is expected in the trustless (in-protocol) form.\n\n`0` accepts no execution payments from this builder, requiring the whole payment to be\ntrustless. `MAX_EXECUTION_PAYMENT` (`2**64 - 1`) accepts any amount.\n",
+                              "example": "250000000"
+                            }
+                          ]
+                        },
+                        "min_bid": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^(0|[1-9][0-9]{0,19})$",
+                              "example": "30000000"
+                            },
+                            {
+                              "description": "A floor, in Gwei, on the total payment accepted from this builder, counting a bid's\n`value` plus its `execution_payment`.\n",
+                              "example": "10000000"
+                            }
+                          ]
+                        },
+                        "builder_boost_factor": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^(0|[1-9][0-9]{0,19})$",
+                              "example": "30000000"
+                            },
+                            {
+                              "description": "Percentage multiplier weighting this builder's bid against other builder bids and the\nlocal payload. Below `100` disfavors this builder, above `100` favors it.\n\nValues that encode common preferences:\n\n* `0`: prefer the local payload unless an error makes it unviable.\n* `100`: profit maximization; choose whichever pays more.\n* `2**64 - 1`: prefer this builder unless an error or health check makes it unviable.\n",
+                              "example": "100"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "BuilderConfig": {
+                  "value": {
+                    "min_bid": "10000000",
+                    "builder_boost_factor": "100",
+                    "builders": [
+                      {
+                        "url": "https://builder-a.example.com",
+                        "max_execution_payment": "0"
+                      },
+                      {
+                        "url": "https://builder-b.example.com",
+                        "builder_pubkeys": [
+                          "0xa057816155ad77931185101128655c0191bd0214c201ca48ed887f6c4c6adf334070efcd75140eada5ac83a92506dd7a"
+                        ],
+                        "max_execution_payment": "0",
+                        "builder_boost_factor": "120"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "successfully updated"
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The key was not found on the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteBuilderConfig",
+        "summary": "Delete Builder Configuration",
+        "description": "Remove this public key's builder configuration entirely. The key then follows the validator\nclient's own configuration, in accordance with the startup of the validator client, exactly as\na key that was never configured does.\n\nThis is not the same as an empty `builders` list, which is a stored configuration saying this\nkey sources no builder-API bids. To stop using one builder while keeping the others, `POST` the\nremaining entries of the `builders` array instead.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Builder Config"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pubkey",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{96}$",
+              "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+              "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully removed the builder configuration, or there was none set for the requested public key."
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A builder configuration was found, but cannot be removed. This may be because it was in configuration files that cannot be updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The key was not found on the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/validator/{pubkey}/feerecipient": {
+      "get": {
+        "operationId": "listFeeRecipient",
+        "summary": "List Fee Recipient.",
+        "description": "List the validator public key to eth address mapping for fee recipient feature on a specific public key.\nThe validator public key will return with the default fee recipient address if a specific one was not found.\n\nWARNING: The fee_recipient is not used on Phase0 or Altair networks.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Fee Recipient"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pubkey",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{96}$",
+              "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+              "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "ListFeeRecipientResponse",
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "ethaddress"
+                      ],
+                      "properties": {
+                        "pubkey": {
+                          "type": "string",
+                          "pattern": "^0x[a-fA-F0-9]{96}$",
+                          "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+                          "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                        },
+                        "ethaddress": {
+                          "type": "string",
+                          "description": "An address on the execution (Ethereum 1) network.",
+                          "example": "0xAbcF8e0d4e9587369b2301D0790347320302cc09",
+                          "pattern": "^0x[a-fA-F0-9]{40}$"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The key was not found on the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "setFeeRecipient",
+        "summary": "Set Fee Recipient.",
+        "description": "Sets the validator client fee recipient mapping which will then update the beacon node.\nExisting mappings for the same validator public key will be overwritten.\nSpecific Public keys not mapped will continue to use the default address for fee recipient in accordance to the startup of the validator client and beacon node.\nCannot specify the 0x00 fee recipient address through the API.\n\nWARNING: The fee_recipient is not used on Phase0 or Altair networks.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Fee Recipient"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pubkey",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{96}$",
+              "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+              "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "SetFeeRecipientRequest",
+                "type": "object",
+                "required": [
+                  "ethaddress"
+                ],
+                "properties": {
+                  "ethaddress": {
+                    "type": "string",
+                    "description": "An address on the execution (Ethereum 1) network.",
+                    "example": "0xAbcF8e0d4e9587369b2301D0790347320302cc09",
+                    "pattern": "^0x[a-fA-F0-9]{40}$"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "successfully updated"
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The key was not found on the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteFeeRecipient",
+        "summary": "Delete Configured Fee Recipient",
+        "description": "Delete a configured fee recipient mapping for the specified public key.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Fee Recipient"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pubkey",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{96}$",
+              "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+              "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully removed the mapping, or there was no mapping to remove for a key that the server is managing."
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A mapping was found, but cannot be removed. This may be because the mapping was in configuration files that cannot be updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The key was not found on the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/validator/{pubkey}/gas_limit": {
+      "get": {
+        "operationId": "getGasLimit",
+        "summary": "Get Gas Limit.",
+        "description": "Get the execution gas limit for an individual validator. This gas limit is the one used by the\nvalidator when proposing blocks via an external builder. If no limit has been set explicitly for\na key then the process-wide default will be returned.\n\nThe server may return a 400 status code if no external builder is configured.\n\nWARNING: The gas_limit is not used on Phase0 or Altair networks.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Gas Limit"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pubkey",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{96}$",
+              "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+              "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "ListGasLimitResponse",
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "gas_limit"
+                      ],
+                      "properties": {
+                        "pubkey": {
+                          "type": "string",
+                          "pattern": "^0x[a-fA-F0-9]{96}$",
+                          "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+                          "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                        },
+                        "gas_limit": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "example": "30000000"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The key was not found on the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "setGasLimit",
+        "summary": "Set Gas Limit.",
+        "description": "Set the gas limit for an individual validator. This limit will be propagated to the beacon\nnode for use on future block proposals. The beacon node is responsible for informing external\nblock builders of the change.\n\nThe server may return a 400 status code if no external builder is configured.\n\nWARNING: The gas_limit is not used on Phase0 or Altair networks.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Gas Limit"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pubkey",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{96}$",
+              "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+              "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "SetGasLimitRequest",
+                "type": "object",
+                "required": [
+                  "gas_limit"
+                ],
+                "properties": {
+                  "gas_limit": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,19})$",
+                    "example": "30000000"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "successfully updated"
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The key was not found on the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteGasLimit",
+        "summary": "Delete Configured Gas Limit",
+        "description": "Delete a configured gas limit for the specified public key.\n\nThe server may return a 400 status code if no external builder is configured.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Gas Limit"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pubkey",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{96}$",
+              "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+              "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully removed the gas limit, or there was no gas limit set for the requested public key."
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A gas limit was found, but cannot be removed. This may be because the gas limit was in configuration files that cannot be updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The key was not found on the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/validator/{pubkey}/graffiti": {
+      "get": {
+        "operationId": "getGraffiti",
+        "summary": "Get Graffiti",
+        "description": "Get the graffiti for an individual validator. If no graffiti is set\nexplicitly, returns the process-wide default.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Graffiti"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pubkey",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{96}$",
+              "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+              "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "GraffitiResponse",
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "graffiti"
+                      ],
+                      "properties": {
+                        "pubkey": {
+                          "type": "string",
+                          "pattern": "^0x[a-fA-F0-9]{96}$",
+                          "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+                          "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                        },
+                        "graffiti": {
+                          "type": "string",
+                          "description": "Arbitrary data to set in the graffiti field of BeaconBlockBody",
+                          "example": "plain text value"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The key was not found on the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "setGraffiti",
+        "summary": "Set Graffiti",
+        "description": "Set the graffiti for an individual validator.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Graffiti"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pubkey",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{96}$",
+              "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+              "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "SetGraffitiRequest",
+                "type": "object",
+                "required": [
+                  "graffiti"
+                ],
+                "properties": {
+                  "graffiti": {
+                    "type": "string",
+                    "description": "Arbitrary data to set in the graffiti field of BeaconBlockBody",
+                    "example": "plain text value"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "successfully updated"
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The key was not found on the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteGraffiti",
+        "summary": "Delete Configured Graffiti",
+        "description": "Delete the configured graffiti for the specified public key.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Graffiti"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pubkey",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{96}$",
+              "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+              "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully removed the graffiti, or there was no graffiti set for the requested public key."
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A graffiti was found, but cannot be removed. This may be because the graffiti was in configuration files that cannot be updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The key was not found on the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/validator/{pubkey}/voluntary_exit": {
+      "post": {
+        "operationId": "signVoluntaryExit",
+        "summary": "Create and sign a voluntary exit message for an active validator",
+        "description": "Create a signed voluntary exit message for an active validator, identified by a public key known to the validator \nclient. This endpoint returns a `SignedVoluntaryExit` object, which can be used to initiate voluntary exit via the \nbeacon node's [submitPoolVoluntaryExit](https://ethereum.github.io/beacon-APIs/#/Beacon/submitPoolVoluntaryExit) endpoint.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Voluntary Exit"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pubkey",
+            "description": "Public key of an active validator known to the validator client.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{96}$",
+              "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+              "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+            }
+          },
+          {
+            "in": "query",
+            "name": "epoch",
+            "required": false,
+            "description": "Minimum epoch for processing exit. Defaults to the current epoch if not set.",
+            "schema": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "example": "30000000"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "SignVoluntaryExitResponse",
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "description": "The [`SignedVoluntaryExit`](https://github.com/ethereum/consensus-specs/blob/v1.0.1/specs/phase0/beacon-chain.md#signedvoluntaryexit) object from the CL spec.",
+                      "properties": {
+                        "message": {
+                          "type": "object",
+                          "description": "The [`VoluntaryExit`](https://github.com/ethereum/consensus-specs/blob/v1.0.1/specs/phase0/beacon-chain.md#voluntaryexit) object from the CL spec.",
+                          "properties": {
+                            "epoch": {
+                              "allOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                  "example": "30000000"
+                                },
+                                {
+                                  "description": "Minimum epoch for processing exit."
+                                }
+                              ]
+                            },
+                            "validator_index": {
+                              "allOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                  "example": "30000000"
+                                },
+                                {
+                                  "description": "Index of the exiting validator."
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "signature": {
+                          "type": "string",
+                          "format": "hex",
+                          "pattern": "^0x[a-fA-F0-9]{192}$",
+                          "example": "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Request was malformed and could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, no token is found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, a token is found but is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The key was not found on the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "description": "Detailed error message",
+                      "type": "string",
+                      "example": "description of the error that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "URL safe, opaque token"
+      }
+    },
+    "schemas": {
+      "Pubkey": {
+        "type": "string",
+        "pattern": "^0x[a-fA-F0-9]{96}$",
+        "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+        "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+      },
+      "EthAddress": {
+        "type": "string",
+        "description": "An address on the execution (Ethereum 1) network.",
+        "example": "0xAbcF8e0d4e9587369b2301D0790347320302cc09",
+        "pattern": "^0x[a-fA-F0-9]{40}$"
+      },
+      "Keystore": {
+        "type": "string",
+        "description": "JSON serialized representation of a single keystore in EIP-2335: BLS12-381 Keystore format.\n",
+        "example": "{\"version\":4,\"uuid\":\"9f75a3fa-1e5a-49f9-be3d-f5a19779c6fa\",\"path\":\"m/12381/3600/0/0/0\",\"pubkey\":\"0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a\",\"crypto\":{\"kdf\":{\"function\":\"pbkdf2\",\"params\":{\"dklen\":32,\"c\":262144,\"prf\":\"hmac-sha256\",\"salt\":\"8ff8f22ef522a40f99c6ce07fdcfc1db489d54dfbc6ec35613edf5d836fa1407\"},\"message\":\"\"},\"checksum\":{\"function\":\"sha256\",\"params\":{},\"message\":\"9678a69833d2576e3461dd5fa80f6ac73935ae30d69d07659a709b3cd3eddbe3\"},\"cipher\":{\"function\":\"aes-128-ctr\",\"params\":{\"iv\":\"31b69f0ac97261e44141b26aa0da693f\"},\"message\":\"e8228bafec4fcbaca3b827e586daad381d53339155b034e5eaae676b715ab05e\"}}}"
+      },
+      "BuilderConfig": {
+        "type": "object",
+        "description": "How a validator public key sources blocks from builders.\n\nAn empty `builders` list requests bids from no builder, overriding any builders the validator\nclient is configured with globally; with a `builder_boost_factor` of `0` the key also prefers\nits local build. This differs from having no configuration, which follows the validator client\nin full.\n\n`BuilderConfig` carries a `min_bid` and a `builder_boost_factor` that are this key's defaults.\nAn entry that omits its own takes the default, so one value covers every builder without being\nrepeated on each entry, and the defaults also apply to p2p bids.\n\nThe validator client resolves the configuration before it reaches the beacon node. An omitted\n`builders` list resolves to the builders the validator client is configured with globally, or\nto an empty list if there are none, and this key's defaults apply to those entries all the\nsame. Within an entry, an omitted `min_bid` or `builder_boost_factor` takes this key's\ndefault, and then the validator client's own configuration; an omitted\n`max_execution_payment` takes the validator client's configuration; an omitted `auth_data` is\nderived from the entry's `url` as described in `BuilderEntry`; an omitted `builder_pubkeys`\nresolves to the empty list.\n",
+        "required": [],
+        "properties": {
+          "min_bid": {
+            "allOf": [
+              {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "example": "30000000"
+              },
+              {
+                "description": "This key's default `min_bid`, in Gwei. Applies to any entry that omits its own, and to\np2p bids.\n",
+                "example": "10000000"
+              }
+            ]
+          },
+          "builder_boost_factor": {
+            "allOf": [
+              {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "example": "30000000"
+              },
+              {
+                "description": "This key's default `builder_boost_factor`. Applies to any entry that omits its own, and\nto p2p bids.\n\n* `0`: prefer the local payload unless an error makes it unviable.\n* `100`: profit maximization; choose whichever pays more.\n* `2**64 - 1`: prefer the bid unless an error or health check makes it unviable.\n",
+                "example": "100"
+              }
+            ]
+          },
+          "builders": {
+            "type": "array",
+            "maxItems": 64,
+            "description": "The builders this key sources bids from, replacing any the validator client is configured\nwith. Omit this field to use the validator client's builders instead. Send an empty array to\nuse none, so no bid is requested from any builder and p2p bids remain this key's only\nsource.\n",
+            "items": {
+              "type": "object",
+              "description": "One builder a validator public key may source blocks from.\n\nNo two entries may share both their `url` and their `auth_data`. `url` is compared as the\nexact string and `auth_data` as the decoded bytes, so hex case does not distinguish entries,\nand an omitted `auth_data` is compared as the value the validator client would derive for it.\nOne request is made per entry, so several entries MAY share a `url` with different `auth_data`,\nsince several builders may be reachable at one `url`.\n\nSee [produceBlockV4](https://ethereum.github.io/beacon-APIs/#/Validator/produceBlockV4) for the\nselection rule.\n",
+              "required": [
+                "url"
+              ],
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "minLength": 1,
+                  "maxLength": 2048,
+                  "description": "The URL this entry's requests are sent to.\n",
+                  "example": "https://builder.example.com"
+                },
+                "auth_data": {
+                  "type": "string",
+                  "pattern": "^0x(?:[a-fA-F0-9]{2}){1,4096}$",
+                  "description": "Opaque data used to authenticate this validator's requests to the builder. Agreed with the\nbuilder out of band and placed verbatim in the `RequestAuth.data` the validator signs. The\nbuilder checks the signature and the exact bytes. Its meaning is left to the two parties\n(for example, a shared secret). At most `MAX_DATA_SIZE` (4096) bytes.\n\nThe keymanager treats this value as opaque bytes: it only ever compares `auth_data` values\nfor equality, and never parses or inspects them. When no value has been agreed with the\nbuilder out of band, the caller SHOULD set `auth_data` to the UTF-8 bytes of the builder's\nown advertised URL, exactly as advertised, hex encoded: it is deterministic, distinct per\nbuilder, and requires no coordination between the signers of a distributed validator. That\nis purely a convention about what tooling writes into the field.\n\nOmitting it leaves the validator client to set it to the UTF-8 bytes of the entry's\n`url` verbatim, since the builder requires authentication on every bid request. A\nzero-length `auth_data` is invalid.\n",
+                  "example": "0x68747470733a2f2f6275696c6465722e6578616d706c652e636f6d"
+                },
+                "builder_pubkeys": {
+                  "type": "array",
+                  "maxItems": 64,
+                  "description": "The builder BLS public keys this entry accepts bids from. Empty or omitted accepts any\nbuilder; otherwise a bid not signed by one of them MUST NOT be accepted.\n",
+                  "items": {
+                    "allOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^0x[a-fA-F0-9]{96}$",
+                        "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+                        "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                      },
+                      {
+                        "description": "A builder's BLS public key. _48-bytes, hex encoded with 0x prefix, case insensitive._"
+                      }
+                    ]
+                  }
+                },
+                "max_execution_payment": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$",
+                      "example": "30000000"
+                    },
+                    {
+                      "description": "A ceiling, in Gwei, on the trusted execution payment accepted from this builder. The\nremainder of its payment is expected in the trustless (in-protocol) form.\n\n`0` accepts no execution payments from this builder, requiring the whole payment to be\ntrustless. `MAX_EXECUTION_PAYMENT` (`2**64 - 1`) accepts any amount.\n",
+                      "example": "250000000"
+                    }
+                  ]
+                },
+                "min_bid": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$",
+                      "example": "30000000"
+                    },
+                    {
+                      "description": "A floor, in Gwei, on the total payment accepted from this builder, counting a bid's\n`value` plus its `execution_payment`.\n",
+                      "example": "10000000"
+                    }
+                  ]
+                },
+                "builder_boost_factor": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$",
+                      "example": "30000000"
+                    },
+                    {
+                      "description": "Percentage multiplier weighting this builder's bid against other builder bids and the\nlocal payload. Below `100` disfavors this builder, above `100` favors it.\n\nValues that encode common preferences:\n\n* `0`: prefer the local payload unless an error makes it unviable.\n* `100`: profit maximization; choose whichever pays more.\n* `2**64 - 1`: prefer this builder unless an error or health check makes it unviable.\n",
+                      "example": "100"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "BuilderEntry": {
+        "type": "object",
+        "description": "One builder a validator public key may source blocks from.\n\nNo two entries may share both their `url` and their `auth_data`. `url` is compared as the\nexact string and `auth_data` as the decoded bytes, so hex case does not distinguish entries,\nand an omitted `auth_data` is compared as the value the validator client would derive for it.\nOne request is made per entry, so several entries MAY share a `url` with different `auth_data`,\nsince several builders may be reachable at one `url`.\n\nSee [produceBlockV4](https://ethereum.github.io/beacon-APIs/#/Validator/produceBlockV4) for the\nselection rule.\n",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "The URL this entry's requests are sent to.\n",
+            "example": "https://builder.example.com"
+          },
+          "auth_data": {
+            "type": "string",
+            "pattern": "^0x(?:[a-fA-F0-9]{2}){1,4096}$",
+            "description": "Opaque data used to authenticate this validator's requests to the builder. Agreed with the\nbuilder out of band and placed verbatim in the `RequestAuth.data` the validator signs. The\nbuilder checks the signature and the exact bytes. Its meaning is left to the two parties\n(for example, a shared secret). At most `MAX_DATA_SIZE` (4096) bytes.\n\nThe keymanager treats this value as opaque bytes: it only ever compares `auth_data` values\nfor equality, and never parses or inspects them. When no value has been agreed with the\nbuilder out of band, the caller SHOULD set `auth_data` to the UTF-8 bytes of the builder's\nown advertised URL, exactly as advertised, hex encoded: it is deterministic, distinct per\nbuilder, and requires no coordination between the signers of a distributed validator. That\nis purely a convention about what tooling writes into the field.\n\nOmitting it leaves the validator client to set it to the UTF-8 bytes of the entry's\n`url` verbatim, since the builder requires authentication on every bid request. A\nzero-length `auth_data` is invalid.\n",
+            "example": "0x68747470733a2f2f6275696c6465722e6578616d706c652e636f6d"
+          },
+          "builder_pubkeys": {
+            "type": "array",
+            "maxItems": 64,
+            "description": "The builder BLS public keys this entry accepts bids from. Empty or omitted accepts any\nbuilder; otherwise a bid not signed by one of them MUST NOT be accepted.\n",
+            "items": {
+              "allOf": [
+                {
+                  "type": "string",
+                  "pattern": "^0x[a-fA-F0-9]{96}$",
+                  "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+                  "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                },
+                {
+                  "description": "A builder's BLS public key. _48-bytes, hex encoded with 0x prefix, case insensitive._"
+                }
+              ]
+            }
+          },
+          "max_execution_payment": {
+            "allOf": [
+              {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "example": "30000000"
+              },
+              {
+                "description": "A ceiling, in Gwei, on the trusted execution payment accepted from this builder. The\nremainder of its payment is expected in the trustless (in-protocol) form.\n\n`0` accepts no execution payments from this builder, requiring the whole payment to be\ntrustless. `MAX_EXECUTION_PAYMENT` (`2**64 - 1`) accepts any amount.\n",
+                "example": "250000000"
+              }
+            ]
+          },
+          "min_bid": {
+            "allOf": [
+              {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "example": "30000000"
+              },
+              {
+                "description": "A floor, in Gwei, on the total payment accepted from this builder, counting a bid's\n`value` plus its `execution_payment`.\n",
+                "example": "10000000"
+              }
+            ]
+          },
+          "builder_boost_factor": {
+            "allOf": [
+              {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "example": "30000000"
+              },
+              {
+                "description": "Percentage multiplier weighting this builder's bid against other builder bids and the\nlocal payload. Below `100` disfavors this builder, above `100` favors it.\n\nValues that encode common preferences:\n\n* `0`: prefer the local payload unless an error makes it unviable.\n* `100`: profit maximization; choose whichever pays more.\n* `2**64 - 1`: prefer this builder unless an error or health check makes it unviable.\n",
+                "example": "100"
+              }
+            ]
+          }
+        }
+      },
+      "FeeRecipient": {
+        "type": "object",
+        "required": [
+          "ethaddress"
+        ],
+        "properties": {
+          "pubkey": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{96}$",
+            "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+            "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+          },
+          "ethaddress": {
+            "type": "string",
+            "description": "An address on the execution (Ethereum 1) network.",
+            "example": "0xAbcF8e0d4e9587369b2301D0790347320302cc09",
+            "pattern": "^0x[a-fA-F0-9]{40}$"
+          }
+        }
+      },
+      "GasLimit": {
+        "type": "object",
+        "required": [
+          "gas_limit"
+        ],
+        "properties": {
+          "pubkey": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{96}$",
+            "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+            "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+          },
+          "gas_limit": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "example": "30000000"
+          }
+        }
+      },
+      "Graffiti": {
+        "type": "string",
+        "description": "Arbitrary data to set in the graffiti field of BeaconBlockBody",
+        "example": "plain text value"
+      },
+      "Uint64": {
+        "type": "string",
+        "pattern": "^(0|[1-9][0-9]{0,19})$",
+        "example": "30000000"
+      },
+      "SignerDefinition": {
+        "type": "object",
+        "required": [
+          "pubkey"
+        ],
+        "properties": {
+          "pubkey": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{96}$",
+            "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+            "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+          },
+          "url": {
+            "description": "URL to API implementing EIP-3030: BLS Remote Signer HTTP API",
+            "type": "string",
+            "example": "https://remote.signer"
+          },
+          "readonly": {
+            "type": "boolean",
+            "description": "The signer associated with this pubkey cannot be deleted from the API"
+          }
+        }
+      },
+      "ImportRemoteSignerDefinition": {
+        "type": "object",
+        "required": [
+          "pubkey"
+        ],
+        "properties": {
+          "pubkey": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{96}$",
+            "description": "The validator's BLS public key, uniquely identifying them. _48-bytes, hex encoded with 0x prefix, case insensitive._\n",
+            "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+          },
+          "url": {
+            "description": "URL to API implementing EIP-3030: BLS Remote Signer HTTP API",
+            "type": "string",
+            "example": "https://remote.signer"
+          }
+        }
+      },
+      "SlashingProtectionData": {
+        "type": "string",
+        "description": "JSON serialized representation of the slash protection data in format defined in EIP-3076: Slashing Protection Interchange Format.\n",
+        "example": "{\"metadata\":{\"interchange_format_version\":\"5\",\"genesis_validators_root\":\"0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2\"},\"data\":[{\"pubkey\":\"0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a\",\"signed_blocks\":[],\"signed_attestations\":[]}]}"
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "description": "Detailed error message",
+            "type": "string",
+            "example": "description of the error that occurred"
+          }
+        }
+      },
+      "SignedVoluntaryExit": {
+        "type": "object",
+        "description": "The [`SignedVoluntaryExit`](https://github.com/ethereum/consensus-specs/blob/v1.0.1/specs/phase0/beacon-chain.md#signedvoluntaryexit) object from the CL spec.",
+        "properties": {
+          "message": {
+            "type": "object",
+            "description": "The [`VoluntaryExit`](https://github.com/ethereum/consensus-specs/blob/v1.0.1/specs/phase0/beacon-chain.md#voluntaryexit) object from the CL spec.",
+            "properties": {
+              "epoch": {
+                "allOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,19})$",
+                    "example": "30000000"
+                  },
+                  {
+                    "description": "Minimum epoch for processing exit."
+                  }
+                ]
+              },
+              "validator_index": {
+                "allOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,19})$",
+                    "example": "30000000"
+                  },
+                  {
+                    "description": "Index of the exiting validator."
+                  }
+                ]
+              }
+            }
+          },
+          "signature": {
+            "type": "string",
+            "format": "hex",
+            "pattern": "^0x[a-fA-F0-9]{192}$",
+            "example": "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad request. Request was malformed and could not be processed",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": [
+                "message"
+              ],
+              "properties": {
+                "message": {
+                  "description": "Detailed error message",
+                  "type": "string",
+                  "example": "description of the error that occurred"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized, no token is found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": [
+                "message"
+              ],
+              "properties": {
+                "message": {
+                  "description": "Detailed error message",
+                  "type": "string",
+                  "example": "description of the error that occurred"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Forbidden, a token is found but is invalid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": [
+                "message"
+              ],
+              "properties": {
+                "message": {
+                  "description": "Detailed error message",
+                  "type": "string",
+                  "example": "description of the error that occurred"
+                }
+              }
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "The key was not found on the server",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": [
+                "message"
+              ],
+              "properties": {
+                "message": {
+                  "description": "Detailed error message",
+                  "type": "string",
+                  "example": "description of the error that occurred"
+                }
+              }
+            }
+          }
+        }
+      },
+      "InternalError": {
+        "description": "Internal server error. The server encountered an unexpected error indicative of\na serious fault in the system, or a bug.\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": [
+                "message"
+              ],
+              "properties": {
+                "message": {
+                  "description": "Detailed error message",
+                  "type": "string",
+                  "example": "description of the error that occurred"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
