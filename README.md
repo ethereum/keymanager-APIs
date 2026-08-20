@@ -28,15 +28,28 @@ Learn about the Consensus Validator Clients that implement these APIs on the [Et
 
 ### v1 APIS
 
-| Validator Client/Remote Managers | local keymanager | remote keymanager | fee recipient | gas limit  | graffiti |
-| -------------------------------- | ---------------- | ----------------- | ------------- | ---------- | -------- |
-| Prysm                            | production       | production        | production    | production | -        |
-| Teku                             | production       | production        | production    | production | -        |
-| Lighthouse                       | v2.1.2           | v2.3.0            | v2.4.0        | v3.0.0     | -        |
-| Nimbus                           | production       | production        | 22.7.0        | -          | -        |
-| Lodestar                         | v0.35.0          | v0.40.0           | v1.2.0        | v1.2.0     | v1.12.0  |
-| Vero                             | N/A              | v1.1.0            | v1.1.0        | v1.1.0     | v1.1.0   |
-| Web3signer                       | production       | N/A               | N/A           | N/A        | N/A      |
+#### Key management
+
+| Client     | Local keymanager | Remote keymanager |
+| ---------- | ---------------- | ----------------- |
+| Prysm      | v2.0.5           | v2.1.0            |
+| Teku       | 22.1.1           | 22.3.1            |
+| Lighthouse | v2.1.2           | v2.3.0            |
+| Nimbus     | v1.6.0           | v1.7.0            |
+| Lodestar   | v0.35.0          | v0.40.0           |
+| Vero       | N/A              | v1.1.0            |
+| Web3signer | 22.4.0           | N/A               |
+
+#### Validator configuration
+
+| Client     | Fee recipient | Gas limit  | Graffiti | Builder config |
+| ---------- | ------------- | ---------- | -------- | -------------- |
+| Prysm      | v2.1.4        | v3.1.0     | v5.0.2   | -              |
+| Teku       | 22.5.2        | 22.8.2     | 24.4.0   | -              |
+| Lighthouse | v2.4.0        | v3.0.0     | v4.6.0   | -              |
+| Nimbus     | v22.7.0       | v23.2.0    | v24.3.0  | -              |
+| Lodestar   | v1.2.0        | v1.2.0     | v1.12.0  | -              |
+| Vero       | v1.1.0        | v1.1.0     | v1.1.0   | -              |
 
 ## Use Cases
 
