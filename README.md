@@ -50,7 +50,6 @@ Learn about the Consensus Validator Clients that implement these APIs on the [Et
 | Nimbus     | 22.7.0        | -          | -        | -              |
 | Lodestar   | v1.2.0        | v1.2.0     | v1.12.0  | -              |
 | Vero       | v1.1.0        | v1.1.0     | v1.1.0   | -              |
-| Web3signer | N/A           | N/A        | N/A      | N/A            |
 
 ## Use Cases
 
