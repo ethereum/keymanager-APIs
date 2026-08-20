@@ -32,7 +32,7 @@ Learn about the Consensus Validator Clients that implement these APIs on the [Et
 
 | Client     | Local keymanager | Remote keymanager |
 | ---------- | ---------------- | ----------------- |
-| Prysm      | production       | production        |
+| Prysm      | v2.0.5           | v2.1.0            |
 | Teku       | production       | production        |
 | Lighthouse | v2.1.2           | v2.3.0            |
 | Nimbus     | production       | production        |
@@ -44,7 +44,7 @@ Learn about the Consensus Validator Clients that implement these APIs on the [Et
 
 | Client     | Fee recipient | Gas limit  | Graffiti | Builder config |
 | ---------- | ------------- | ---------- | -------- | -------------- |
-| Prysm      | production    | production | -        | -              |
+| Prysm      | v2.1.4        | v3.1.0     | v5.0.2   | -              |
 | Teku       | production    | production | -        | -              |
 | Lighthouse | v2.4.0        | v3.0.0     | -        | -              |
 | Nimbus     | 22.7.0        | -          | -        | -              |
