@@ -22,5 +22,5 @@ Vero
 Gwei
 uri
 UTF
-RequestAuth
+BuilderRequestAuth
 produceBlockV
