@@ -108,18 +108,19 @@ BuilderEntry:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
         - description: |
-            A ceiling, in Gwei, on the trusted execution payment accepted from this builder. The
-            remainder of its payment is expected in the trustless (in-protocol) form.
+            A cap, in Gwei, on the execution payment counted from this builder: a bid is valued
+            at its `value` plus `min(execution_payment, max_execution_payment)`, so payment above
+            the cap adds nothing to the bid's chances.
 
-            `0` accepts no execution payments from this builder, requiring the whole payment to be
-            trustless. `MAX_EXECUTION_PAYMENT` (`2**64 - 1`) accepts any amount.
+            `0` counts no execution payment, leaving the bid valued at its trustless `value`
+            alone. `MAX_EXECUTION_PAYMENT` (`2**64 - 1`) counts any amount in full.
           example: "250000000"
     min_bid:
       allOf:
         - $ref: "../keymanager-oapi.yaml#/components/schemas/Uint64"
         - description: |
             A floor, in Gwei, on the total payment accepted from this builder, counting a bid's
-            `value` plus its `execution_payment`.
+            `value` plus its counted `execution_payment` (see `max_execution_payment`).
           example: "10000000"
     builder_boost_factor:
       allOf:
