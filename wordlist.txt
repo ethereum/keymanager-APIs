@@ -21,6 +21,5 @@ oapi
 Vero
 Gwei
 uri
-UTF
 BuilderRequestAuth
 produceBlockV
